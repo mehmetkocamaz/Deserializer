@@ -38,12 +38,19 @@ private:
 	uint32_t m_SourceItemId;
 	std::vector<CostInfo> m_CostInfos;
 	std::vector<RequirementInfo> m_SourceRequirementInfos;
+
 public:
-	void SetSourceId(uint32_t itemId) {
+	void SetSourceItemId(uint32_t itemId) {
 		m_SourceItemId = itemId;
 	}
-	uint32_t GetSourceId()const  {
+	uint32_t GetSourceItemId()const  {
 		return m_SourceItemId;
+	}
+	void SetCostInfo(CostInfo& obj) {
+		m_CostInfos.push_back(obj);
+	}
+	void SetSourceRequirementInfo(RequirementInfo& obj) {
+		m_SourceRequirementInfos.push_back(obj);
 	}
 };
 
@@ -52,6 +59,14 @@ class CombineCriteria
 private:
 	std::vector<RequirementInfo> m_TargetRequirementInfos;
 	std::vector<SourceCriteria> m_SourceCriterias;
+
+public:
+	void SetSourceCriterias(SourceCriteria& obj) {
+		m_SourceCriterias.push_back(obj);
+	}
+	void SetTargetRequirementInfo(RequirementInfo& obj) {
+		m_TargetRequirementInfos.push_back(obj);
+	}
 };
 
 class CombineInfo
@@ -59,14 +74,22 @@ class CombineInfo
 private:
 	uint32_t m_TargetItemId;
 	std::vector<CombineCriteria> m_CombineCriterias;
+
 public:
-	void SetTargetId(uint32_t id) {
-		m_TargetItemId = id;
+	bool SetTargetItemId(uint32_t id) {
+		if (m_TargetItemId = id) {
+			return true;
+		}
+		return false;
 	}
-	uint32_t GetTargetId() const {
+	uint32_t GetTargetItemId() const {
 		return m_TargetItemId;
 	}
 	
+	void SetCombineCriterias(CombineCriteria& obj) {
+		m_CombineCriterias.push_back(obj);
+	}
+
 };
 
 #endif // !DESERIALIZER_H

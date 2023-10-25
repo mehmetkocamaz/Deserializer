@@ -129,7 +129,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Deserializer.h" />
-    <ClInclude Include="Functions.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="json_fwd.hpp" />
   </ItemGroup>

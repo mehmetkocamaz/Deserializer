@@ -1,0 +1,25 @@
+{
+	"SourceCriteria":
+	{
+	"SourceItemId": 123,
+	"CostInfos": 
+	[
+		{
+		"CostType": 0,
+		"CostValue": 123
+		},
+		{
+		"CostType": 1,
+		"CostValue": 123
+		}
+	],
+	"RequirementInfos":
+	[
+		{
+		"RequirementType": 0,
+		"RequirementValue": 123
+		}
+	]
+	}
+}
+	

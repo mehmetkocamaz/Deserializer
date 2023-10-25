@@ -1,0 +1,10 @@
+{
+    "CostInfo": {
+        "CostType": 0,
+        "CostValue": 100
+    },
+    "RequirementInfo": {
+        "RequirementType": 1,
+        "RequirementValue": 3
+    }
+}

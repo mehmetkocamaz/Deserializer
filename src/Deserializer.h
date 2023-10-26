@@ -1,6 +1,5 @@
 #pragma once
-#ifndef DESERIALIZER_H
-#define DESERIALIZER_H
+
 #include <cstdint>
 #include <vector>
 
@@ -35,6 +34,7 @@ struct RequirementInfo
 class SourceCriteria
 {
 private:
+
 	uint32_t m_SourceItemId;
 	std::vector<CostInfo> m_CostInfos;
 	std::vector<RequirementInfo> m_SourceRequirementInfos;
@@ -42,12 +42,11 @@ private:
 public:
 
 	void SetSourceItemId(uint32_t);
-	void SetCostInfo(CostInfo&);
-	void SetSourceRequirementInfo(RequirementInfo&);
-	uint32_t GetSourceItemId()const;
+	void SetCostInfo(const CostInfo&);
+	void SetSourceRequirementInfo(const RequirementInfo&);
+	uint32_t GetSourceItemId() const;
 	std::vector<CostInfo> GetCostInfos() const;
 	std::vector<RequirementInfo> GetSourceRequirementInfos() const;
-
 };
 
 class CombineCriteria
@@ -57,36 +56,11 @@ private:
 	std::vector<SourceCriteria> m_SourceCriterias;
 
 public:
-
 	void SetSourceCriterias(SourceCriteria&);
 	void SetTargetRequirementInfo(RequirementInfo&);
 	std::vector<SourceCriteria> GetSourceCriterias() const;
 	std::vector<RequirementInfo> GetTargetRequirementInfo() const;
-
 };
 
-class CombineInfo
-{
-private:
-	uint32_t m_TargetItemId;
-	std::vector<CombineCriteria> m_CombineCriterias;
 
-public:
 
-	void SetTargetItemId(uint32_t);
-	void SetCombineCriterias(CombineCriteria&);
-	uint32_t GetTargetItemId() const;
-	std::vector<CombineCriteria> GetCombineCriterias() const;
-
-};
-
-class DeserializerManager {
-private:
-	std::vector<CombineInfo> m_CombineInfos;
-public:
-	void SetCombineInfos(CombineInfo&);
-	std::vector<CombineInfo> GetCombineInfos() const;
-	void DisplayScreen() const;
-};
-
-#endif // !DESERIALIZER_H

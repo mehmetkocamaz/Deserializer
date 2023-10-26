@@ -18,21 +18,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="json.hpp">
+    <ClInclude Include="src\json.hpp">
       <Filter>Header Files\JsonHeaders</Filter>
     </ClInclude>
-    <ClInclude Include="json_fwd.hpp">
+    <ClInclude Include="src\json_fwd.hpp">
       <Filter>Header Files\JsonHeaders</Filter>
     </ClInclude>
-    <ClInclude Include="Deserializer.h">
+    <ClInclude Include="src\Deserializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DataClasses\CombineInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DeserializeManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EntryPoint.cpp">
+    <ClCompile Include="src\EntryPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Deserializer.cpp">
+    <ClCompile Include="src\Deserializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

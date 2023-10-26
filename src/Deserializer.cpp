@@ -1,14 +1,15 @@
 #include "Deserializer.h"
+#include "DeserializeManager.h"
 #include <iostream>
 // SOURCE CRITERIA FUNCTION DECLARATIONS
 // ~Setters
 void SourceCriteria::SetSourceItemId(uint32_t itemId) {
 	m_SourceItemId = itemId;
 }
-void SourceCriteria::SetCostInfo(CostInfo& obj) {
+void SourceCriteria::SetCostInfo(const CostInfo& obj) {
 	m_CostInfos.push_back(obj);
 }
-void SourceCriteria::SetSourceRequirementInfo(RequirementInfo& obj) {
+void SourceCriteria::SetSourceRequirementInfo(const RequirementInfo& obj) {
 	m_SourceRequirementInfos.push_back(obj);
 }
 // ~Getters

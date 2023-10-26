@@ -3,6 +3,8 @@
 #include "json.hpp"
 #include <vector>
 #include "Deserializer.h"
+#include "DeserializeManager.h"
+
 using json = nlohmann::json;
 
 void DeserializerFunc(DeserializerManager&);
@@ -15,7 +17,7 @@ int main() {
 }
 
 void DeserializerFunc(DeserializerManager& myDeserializerManagerClass) {
-    std::ifstream file("target.json"); 
+    std::ifstream file("D:\\DEV\\Deserializer\\resources\\target.json");
     if (!file.is_open()) {
         std::cerr << "The json file cannot opened." << std::endl;
         return;
@@ -27,8 +29,9 @@ void DeserializerFunc(DeserializerManager& myDeserializerManagerClass) {
     CombineCriteria myCombineCriteriaClass;
     SourceCriteria mySourceCriteriaClass;
 
-    for (const json& combineInfos : jsonData["CombineInfo"])
+    for (const json& item : jsonData["CombineInfos"])
     {
+        const json& combineInfos = item["CombineInfo"];
         uint32_t targetItemId = combineInfos["TargetItemId"];
         myCombineClass.SetTargetItemId(targetItemId);
         std::cout << "Combine info in" << std::endl;
@@ -38,10 +41,9 @@ void DeserializerFunc(DeserializerManager& myDeserializerManagerClass) {
         {
             for (const json& targetRequirementInfos : combineCriterias["TargetRequirementInfos"]) {
                 int requirementType = targetRequirementInfos["RequirementType"];
-                int32_t requirementValue = targetRequirementInfos["RequirementValue"];
                 RequirementInfo obj;
                 obj.m_RequirementType = static_cast<Enum_Requirement>(requirementType);
-                obj.m_RequirementValue = requirementValue;
+                obj.m_RequirementValue = targetRequirementInfos["RequirementValue"];
                 myCombineCriteriaClass.SetTargetRequirementInfo(obj);
             }
             for (const json& sourceCriterias : combineCriterias["SourceCriterias"]) {

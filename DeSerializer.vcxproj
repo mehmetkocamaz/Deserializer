@@ -133,6 +133,7 @@
     <ClInclude Include="json_fwd.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Deserializer.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

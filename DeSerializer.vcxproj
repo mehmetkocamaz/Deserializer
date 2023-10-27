@@ -128,14 +128,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\BinaryManager.h" />
+    <ClInclude Include="src\DataClasses\CombineCriteria.h" />
     <ClInclude Include="src\DataClasses\CombineInfo.h" />
+    <ClInclude Include="src\DataClasses\CostAndRequirements.h" />
+    <ClInclude Include="src\DataClasses\SourceCriteria.h" />
     <ClInclude Include="src\DeserializeManager.h" />
-    <ClInclude Include="src\Deserializer.h" />
     <ClInclude Include="src\json.hpp" />
     <ClInclude Include="src\json_fwd.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Deserializer.cpp" />
     <ClCompile Include="src\EntryPoint.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

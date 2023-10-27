@@ -1,80 +1,17 @@
 #include <iostream>
 #include <fstream>
-#include "json.hpp"
 #include <vector>
-#include "Deserializer.h"
-#include "DeserializeManager.h"
-
-using json = nlohmann::json;
-
-void DeserializerFunc(DeserializerManager&);
+#include "BinaryManager.h"
 
 int main() {
-
+    BinaryManager binaryData;
     DeserializerManager obj;
-    DeserializerFunc(obj);
+    obj.Deserialize();
     obj.DisplayScreen();
-}
 
-void DeserializerFunc(DeserializerManager& myDeserializerManagerClass) {
-    std::ifstream file("D:\\DEV\\Deserializer\\resources\\target.json");
-    if (!file.is_open()) {
-        std::cerr << "The json file cannot opened." << std::endl;
-        return;
+    binaryData.SetBinaryData(obj);
+    std::cout << "\n\nBinary Data : " << std::endl;
+    for (const auto& item : binaryData.GetBinaryData()) {
+        std::cout << item << std::endl;
     }
-
-    json jsonData;
-    file >> jsonData;
-    CombineInfo myCombineClass;
-    CombineCriteria myCombineCriteriaClass;
-    SourceCriteria mySourceCriteriaClass;
-
-    for (const json& item : jsonData["CombineInfos"])
-    {
-        const json& combineInfos = item["CombineInfo"];
-        uint32_t targetItemId = combineInfos["TargetItemId"];
-        myCombineClass.SetTargetItemId(targetItemId);
-        std::cout << "Combine info in" << std::endl;
-        std::cout << myCombineClass.GetTargetItemId() << std::endl;
-
-        for (const json& combineCriterias : combineInfos["CombineCriterias"])
-        {
-            for (const json& targetRequirementInfos : combineCriterias["TargetRequirementInfos"]) {
-                int requirementType = targetRequirementInfos["RequirementType"];
-                RequirementInfo obj;
-                obj.m_RequirementType = static_cast<Enum_Requirement>(requirementType);
-                obj.m_RequirementValue = targetRequirementInfos["RequirementValue"];
-                myCombineCriteriaClass.SetTargetRequirementInfo(obj);
-            }
-            for (const json& sourceCriterias : combineCriterias["SourceCriterias"]) {
-                uint32_t sourceItemId = sourceCriterias["SourceItemId"];
-                mySourceCriteriaClass.SetSourceItemId(sourceItemId);
-                for (const json& costInfos : sourceCriterias["CostInfos"])
-                {
-                    int costType = costInfos["CostType"];
-                    int32_t costValue = costInfos["CostValue"];
-                    CostInfo obj;
-                    obj.m_CostType = static_cast<Enum_Cost>(costType);
-                    obj.m_CostValue = costValue;
-                    mySourceCriteriaClass.SetCostInfo(obj);
-                }
-                for (const json& sourceRequirementInfos : sourceCriterias["SourceRequirementInfos"])
-                {
-                    int requirementType = sourceRequirementInfos["RequirementType"];
-                    int32_t requirementValue = sourceRequirementInfos["RequirementValue"];
-                    RequirementInfo obj;
-                    obj.m_RequirementType = static_cast<Enum_Requirement>(requirementType);
-                    obj.m_RequirementValue = requirementValue;
-                    mySourceCriteriaClass.SetSourceRequirementInfo(obj);
-                }
-                myCombineCriteriaClass.SetSourceCriterias(mySourceCriteriaClass);
-            }
-            myCombineClass.SetCombineCriterias(myCombineCriteriaClass);
-        }
-        myDeserializerManagerClass.SetCombineInfos(myCombineClass);
-    }
-
-    std::cout << myCombineClass.GetCombineCriterias().at(0).GetSourceCriterias().at(1).GetSourceItemId() << std::endl;
-    std::cin.get();
-
 }

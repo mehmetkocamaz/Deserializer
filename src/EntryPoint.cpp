@@ -10,8 +10,7 @@ int main() {
     obj.DisplayScreen();
 
     binaryData.SetBinaryData(obj);
-    std::cout << "\n\nBinary Data : " << std::endl;
-    for (const auto& item : binaryData.GetBinaryData()) {
-        std::cout << item << std::endl;
-    }
+    binaryData.SaveToFile();
+    binaryData.FetchFromFile();
+
 }

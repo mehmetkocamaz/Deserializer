@@ -19,20 +19,20 @@ public:
 void DeserializerManager::DisplayScreen() const {
 	for (size_t i = 0; i < m_CombineInfos.size(); i++) // LOOP FOR COMBINE INFO VECTOR
 	{
-				std::cout << "------------------------------------------" << std::endl;
+        std::cout << "------------------------------------------" << std::endl;
 		std::cout << "Combine Info: \n" << "Target Item ID: " << m_CombineInfos.at(i).GetTargetItemId() << std::endl;
-				std::cout << "------------------------------------------" << std::endl;
+		std::cout << "------------------------------------------" << std::endl;
 		std::cout << "Combine Criterias: " << std::endl;
 		for (size_t j = 0; j < m_CombineInfos.at(i).GetCombineCriterias().size(); j++) // LOOP FOR COMBINE CRITERIA VECTOR
 		{
-				std::cout << "------------------------------------------" << std::endl;
+			std::cout << "------------------------------------------" << std::endl;
 			std::cout << "Target Requirement Infos: " << std::endl;
 			for (size_t k = 0; k < m_CombineInfos.at(i).GetCombineCriterias().at(j).GetTargetRequirementInfo().size(); k++) // LOOP FOR TARGET REQUIREMENT INFOS
 			{
 				std::cout << "Target Requirement Type: " << static_cast<int>(m_CombineInfos.at(i).GetCombineCriterias().at(j).GetTargetRequirementInfo().at(k).m_RequirementType) << std::endl;
 				std::cout << "Target Requirement Value: " << m_CombineInfos.at(i).GetCombineCriterias().at(j).GetTargetRequirementInfo().at(k).m_RequirementValue << std::endl;
 			}
-				std::cout << "------------------------------------------" << std::endl;
+			std::cout << "------------------------------------------" << std::endl;
 			std::cout << "Source Criterias: " << std::endl;
 			for (size_t k = 0; k < m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().size(); k++) // LOOP FOR SOURCE CRITERIAS
 			{
@@ -115,9 +115,6 @@ void DeserializerManager::Deserialize() {
         }
         m_CombineInfos.push_back(combineInfoClass);
     }
-
-    //std::cout << myCombineClass.GetCombineCriterias().at(0).GetSourceCriterias().at(1).GetSourceItemId() << std::endl;
-    std::cin.get();
 }
 
 

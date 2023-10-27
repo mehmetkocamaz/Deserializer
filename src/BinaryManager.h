@@ -5,6 +5,8 @@ class BinaryManager {
 public:
 	void SetBinaryData(const DeserializerManager&);
 	std::vector<std::bitset<32>> GetBinaryData() const;
+	void SaveToFile();
+	void FetchFromFile();
 private:
 	std::vector<std::bitset<32>> m_BinaryData;
 };
@@ -43,3 +45,42 @@ std::vector<std::bitset<32>> BinaryManager::GetBinaryData() const {
 	return m_BinaryData;
 }
 
+void BinaryManager::SaveToFile() {
+	BinaryManager binaryData;
+	DeserializerManager deserializerManager;
+	deserializerManager.Deserialize();
+	binaryData.SetBinaryData(deserializerManager);
+
+	std::ofstream binaryFile("data.bin", std::ios::binary);
+	if (binaryFile.is_open()) {
+		for (const std::bitset<32>data : binaryData.GetBinaryData()) {
+			binaryFile.write(reinterpret_cast<const char*>(&data), sizeof(data));
+		}
+		binaryFile.close();
+	}
+	else {
+		std::cerr << "data.bin cannot opened!!" << std::endl;
+	}
+}
+
+void BinaryManager::FetchFromFile() {
+	std::ifstream readData("data.bin", std::ios::binary);
+	if (readData.is_open()) {
+		std::vector<std::bitset<32>> binaryData;
+
+		while (!readData.eof()) {
+			std::bitset<32> temp;
+			readData.read(reinterpret_cast<char*>(&temp), sizeof(temp));
+			binaryData.push_back(temp);
+		}
+
+		readData.close();
+
+		for (const auto& item : binaryData) {
+			std::cout << item << std::endl;
+		}
+	}
+	else {
+		std::cerr << "data.bin cannot opened!!" << std::endl;
+	}
+}

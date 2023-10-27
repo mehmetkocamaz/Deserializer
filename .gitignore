@@ -34,3 +34,12 @@
 .vs/
 .vcxproj/
 .x64/
+*.pdb
+*.tlog
+*.recipe
+*.log
+*.ilk
+*.idb
+*.vcxproj
+*.filters
+*.user

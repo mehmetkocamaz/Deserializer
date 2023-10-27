@@ -1,0 +1,65 @@
+{ "CombineInfos":
+  [
+    {
+      "TargetItemId": 12333,
+      "CombineCriterias": [
+        {
+          "TargetRequirementInfos": [
+            {
+              "RequirementType": 0,
+              "RequirementValue": 42
+            },
+            {
+              "RequirementType": 1,
+              "RequirementValue": 52
+            }
+          ],
+          "SourceCriterias": [
+            {
+              "SourceItemId": 5,
+              "CostInfos": [
+                {
+                  "CostType": 0,
+                  "CostValue": 10
+                },
+                {
+                  "CostType": 1,
+                  "CostValue": 11
+                }
+              ],
+              "SourceRequirementInfos": [
+                {
+                  "RequirementType": 0,
+                  "RequirementValue": 20
+                }
+              ]
+            },
+            {
+              "SourceItemId": 2,
+              "CostInfos": [
+                {
+                  "CostType": 2,
+                  "CostValue": 10
+                },
+                {
+                  "CostType": 2,
+                  "CostValue": 11
+                }
+              ],
+              "SourceRequirementInfos": [
+                {
+                  "RequirementType": 1,
+                  "RequirementValue": 21
+                },
+                {
+                  "RequirementType": 1,
+                  "RequirementValue": 22
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

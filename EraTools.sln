@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EraSandbox", "EraSandbox\EraSandbox.vcxproj", "{6C1D4890-58D5-89DD-C1DC-6239ADB324CE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DeSerializer", "DeSerializer\DeSerializer.vcxproj", "{08D376ED-F435-0692-9DBB-3E4889FDD114}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Dist|x64 = Dist|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C1D4890-58D5-89DD-C1DC-6239ADB324CE}.Debug|x64.ActiveCfg = Debug|x64
+		{6C1D4890-58D5-89DD-C1DC-6239ADB324CE}.Debug|x64.Build.0 = Debug|x64
+		{6C1D4890-58D5-89DD-C1DC-6239ADB324CE}.Dist|x64.ActiveCfg = Dist|x64
+		{6C1D4890-58D5-89DD-C1DC-6239ADB324CE}.Dist|x64.Build.0 = Dist|x64
+		{6C1D4890-58D5-89DD-C1DC-6239ADB324CE}.Release|x64.ActiveCfg = Release|x64
+		{6C1D4890-58D5-89DD-C1DC-6239ADB324CE}.Release|x64.Build.0 = Release|x64
+		{08D376ED-F435-0692-9DBB-3E4889FDD114}.Debug|x64.ActiveCfg = Debug|x64
+		{08D376ED-F435-0692-9DBB-3E4889FDD114}.Debug|x64.Build.0 = Debug|x64
+		{08D376ED-F435-0692-9DBB-3E4889FDD114}.Dist|x64.ActiveCfg = Dist|x64
+		{08D376ED-F435-0692-9DBB-3E4889FDD114}.Dist|x64.Build.0 = Dist|x64
+		{08D376ED-F435-0692-9DBB-3E4889FDD114}.Release|x64.ActiveCfg = Release|x64
+		{08D376ED-F435-0692-9DBB-3E4889FDD114}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

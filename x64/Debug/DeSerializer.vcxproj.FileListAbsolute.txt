@@ -1,3 +1,0 @@
-C:\Projects\DeSerializer\x64\Debug\DeSerializer.exe
-C:\Users\kocam\OneDrive\Belgeler\GitHub\Deserializer\x64\Debug\DeSerializer.exe
-C:\Users\kocam\OneDrive\Belgeler\GitHub\Deserializer-main\x64\Debug\DeSerializer.exe

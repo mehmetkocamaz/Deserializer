@@ -2,6 +2,7 @@
 #include "json.hpp"
 #include <iostream>
 #include <fstream>
+#include <bitset>
 using json = nlohmann::json;
 
 // DESERIALIZER MANAGER FUNCTION DECLARATIONS
@@ -91,6 +92,31 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize( std::filesystem
 Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesystem::path filePath)
 {
 	// Binary implemenentation
+	std::ifstream readData(filePath, std::ios::binary);
+	if (!readData.is_open())
+	{
+		std::cerr << "data.bin cannot opened!!" << std::endl;
+		return Enum_DeserializationStatus::OPEN_FILE_ERROR;
+	}
+	try
+	{
+		std::vector<std::bitset<32>> binaryData;
+		while (!readData.eof()) {
+			std::bitset<32> temp;
+			readData.read(reinterpret_cast<char*>(&temp), sizeof(temp));
+			binaryData.push_back(temp);
+		}
+		readData.close();
+		// Display Screen
+		for (const auto& item : binaryData) {
+			std::cout << item << std::endl;
+		}
+	}
+	catch (const std::exception&)
+	{
+		return Enum_DeserializationStatus::FAIL;
+	}
+	
 	return Enum_DeserializationStatus::SUCCESS;
 }
 

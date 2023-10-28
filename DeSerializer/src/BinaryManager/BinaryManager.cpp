@@ -3,7 +3,7 @@
 #include <iostream>
 
 void BinaryManager::SetBinaryData(const DeserializerManager& obj) {
-
+	
 	m_BinaryData.push_back(obj.GetCombineInfos().size());
 	for (const auto& combineInfos : obj.GetCombineInfos()) {
 		m_BinaryData.push_back(combineInfos.GetTargetItemId());
@@ -32,6 +32,7 @@ void BinaryManager::SetBinaryData(const DeserializerManager& obj) {
 	}
 }
 
+
 std::vector<std::bitset<32>> BinaryManager::GetBinaryData() const {
 	return m_BinaryData;
 }
@@ -39,7 +40,9 @@ std::vector<std::bitset<32>> BinaryManager::GetBinaryData() const {
 //void BinaryManager::SaveToFile() {
 //	BinaryManager binaryData;
 //	DeserializerManager deserializerManager;
-//	deserializerManager.JsonDeserialize();
+//	Enum_DeserializationStatus deserializationStatus =
+//		deserializerManager.Deserialize(DeserializeSpec{
+//			.m_FileType = Enum_ContentType::JSON, .m_FilePath = "resources/target.json" });
 //	binaryData.SetBinaryData(deserializerManager);
 //
 //	std::ofstream binaryFile("output/data.bin", std::ios::binary);
@@ -53,25 +56,25 @@ std::vector<std::bitset<32>> BinaryManager::GetBinaryData() const {
 //		std::cerr << "data.bin cannot opened!!" << std::endl;
 //	}
 //}
-
-void BinaryManager::FetchFromFile() {
-	std::ifstream readData("output/data.bin", std::ios::binary);
-	if (readData.is_open()) {
-		std::vector<std::bitset<32>> binaryData;
-
-		while (!readData.eof()) {
-			std::bitset<32> temp;
-			readData.read(reinterpret_cast<char*>(&temp), sizeof(temp));
-			binaryData.push_back(temp);
-		}
-
-		readData.close();
-
-		for (const auto& item : binaryData) {
-			std::cout << item << std::endl;
-		}
-	}
-	else {
-		std::cerr << "data.bin cannot opened!!" << std::endl;
-	}
-}
+//
+//void BinaryManager::FetchFromFile() {
+//	std::ifstream readData("output/data.bin", std::ios::binary);
+//	if (readData.is_open()) {
+//		std::vector<std::bitset<32>> binaryData;
+//
+//		while (!readData.eof()) {
+//			std::bitset<32> temp;
+//			readData.read(reinterpret_cast<char*>(&temp), sizeof(temp));
+//			binaryData.push_back(temp);
+//		}
+//
+//		readData.close();
+//
+//		for (const auto& item : binaryData) {
+//			std::cout << item << std::endl;
+//		}
+//	}
+//	else {
+//		std::cerr << "data.bin cannot opened!!" << std::endl;
+//	}
+//}

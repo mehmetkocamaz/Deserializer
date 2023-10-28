@@ -11,9 +11,9 @@ Enum_DeserializationStatus DeserializerManager::Deserialize(const DeserializeSpe
 {
 	switch (deserializeSpec.m_FileType)
 	{
-	case Enum_ContentType::JSON:
+	case Enum_DeserializeContentType::JSON:
 		return JsonDeserialize(deserializeSpec.m_FilePath);
-	case Enum_ContentType::BINARY:
+	case Enum_DeserializeContentType::BINARY:
 		return BinaryDeserialize(deserializeSpec.m_FilePath);
 	default:
 		return Enum_DeserializationStatus::UNSUPPORTED;

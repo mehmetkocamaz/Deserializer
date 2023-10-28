@@ -13,10 +13,12 @@ enum class Enum_SerializationStatus
 
 class SerializerManager {
 public:
+
 	Enum_SerializationStatus Serialize(const SerializeSpec& serializeSpec);
 
 private:
-	Enum_SerializationStatus JsonSerialize(std::filesystem::path filePath);
-	Enum_SerializationStatus BinarySerialize(std::filesystem::path filePath);
+	Enum_SerializationStatus JsonSerialize(const SerializeSpec& serializeSpec);
+	Enum_SerializationStatus BinarySerialize(const SerializeSpec& serializeSpec);
 	std::vector<std::bitset<32>> m_BinaryData;
+
 };

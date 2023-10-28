@@ -3,6 +3,7 @@
 
 #include "BinaryManager/BinaryManager.h"
 #include "DeserializeManager/DeserializeManager.h"
+#include "SerializeManager/SerializeManager.h"
 
 int main() {
 	BinaryManager binaryManager;
@@ -12,9 +13,20 @@ int main() {
 		deserializeManager.Deserialize(DeserializeSpec{
 			.m_FileType = Enum_ContentType::JSON, .m_FilePath = "resources/target.json" });
 
+
+
 	std::cout << "---JSON DATA---" << std::endl;
 	deserializeManager.DisplayScreen();
 	
+	const std::vector<CombineInfo>& combineInfos= deserializeManager.GetCombineInfos();
+
+	SerializerManager serializeManager;
+	serializeManager.Serialize(SerializeSpec{ 
+		.m_FileType = Enum_ContType::BINARY,
+		.m_FilePath = "output/data2.bin",
+		.m_CombineInfos = &combineInfos });
+	
+
 	// BINARY DATA 
 	DeserializerManager deserializeManager2;
 	std::cout << "---BINARY DATA---" << std::endl;

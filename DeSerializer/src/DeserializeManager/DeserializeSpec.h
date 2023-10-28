@@ -1,7 +1,7 @@
 #pragma once
 #include <filesystem>
 
-enum class Enum_ContentType
+enum class Enum_DeserializeContentType
 {
 	JSON = 1,
 	BINARY = 2
@@ -9,6 +9,6 @@ enum class Enum_ContentType
 
 struct DeserializeSpec
 {
-	Enum_ContentType m_FileType;
+	Enum_DeserializeContentType m_FileType;
 	std::filesystem::path m_FilePath;
 };

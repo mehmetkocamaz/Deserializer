@@ -4,7 +4,6 @@
 class SourceCriteria
 {
 private:
-
 	uint32_t m_SourceItemId;
 	std::vector<CostInfo> m_CostInfos;
 	std::vector<RequirementInfo> m_SourceRequirementInfos;
@@ -16,5 +15,6 @@ public:
 	uint32_t GetSourceItemId() const;
 	std::vector<CostInfo> GetCostInfos() const;
 	std::vector<RequirementInfo> GetSourceRequirementInfos() const;
+	uint32_t& GetSourceItemIdRef() { return m_SourceItemId; }
 };
 

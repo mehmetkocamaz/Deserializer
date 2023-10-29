@@ -4,6 +4,11 @@
 #include <fstream>
 #include <bitset>
 using json = nlohmann::json;
+void ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset);
+void ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t previousOffset);
+void ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destination, uint32_t& offset, uint32_t previousOffset);
+void ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requirement& destination, uint32_t& offset, uint32_t previousOffset);
+
 
 // DESERIALIZER MANAGER FUNCTION DECLARATIONS
 
@@ -31,7 +36,6 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize( std::filesystem
 	{
 		json jsonData;
 		file >> jsonData;
-		SourceCriteria mySourceCriteriaClass;
 
 		for (const json& combineInfo : jsonData["CombineInfos"])
 		{
@@ -91,7 +95,7 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize( std::filesystem
 
 Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesystem::path filePath)
 {
-	// Binary implemenentation
+	
 	std::ifstream readData(filePath, std::ios::binary);
 	if (!readData.is_open())
 	{
@@ -107,10 +111,68 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesyste
 			binaryData.push_back(temp);
 		}
 		readData.close();
-		// Display Screen
-		for (const auto& item : binaryData) {
-			std::cout << item << std::endl;
+
+
+		std::vector<uint32_t> totalBytesRead;
+		uint32_t combineInfoSize = binaryData[0].to_ulong();
+
+
+		for (int32_t i = 0; i < combineInfoSize; i++) {
+			CombineInfo combineInfo;
+			uint32_t previousOffset = i == 0 ? 0 : totalBytesRead[i - 1];
+			
+			totalBytesRead.push_back(0);
+			uint32_t offset = 1 + previousOffset;
+			ReadUint32_t(binaryData, combineInfo.GetTargetItemIdRef(), offset, previousOffset);
+
+			uint32_t combineCriteriaSize;
+			ReadUint32_t(binaryData, combineCriteriaSize, offset, previousOffset);
+			for (int32_t j = 0; j < combineCriteriaSize; j++)
+			{
+				CombineCriteria combineCriteria;
+				uint32_t targetRequirementInfoSize;
+				
+				ReadUint32_t(binaryData, targetRequirementInfoSize, offset, previousOffset);
+				for (int32_t k = 0; k < targetRequirementInfoSize; k++)
+				{
+					RequirementInfo requirementInfo;
+					ReadEnum_Requirement(binaryData, requirementInfo.GetRequirementTypeRef(), offset, previousOffset);
+					ReadInt32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
+					combineCriteria.SetTargetRequirementInfo(requirementInfo);
+				}
+				SourceCriteria sourceCriteria;
+				uint32_t sourceCriteriaSize;
+				ReadUint32_t(binaryData, sourceCriteriaSize, offset, previousOffset);
+				for (int32_t k = 0; k < sourceCriteriaSize; k++) {
+					
+					ReadUint32_t(binaryData, sourceCriteria.GetSourceItemIdRef(), offset, previousOffset);
+					int32_t costInfoSize;
+					ReadInt32_t(binaryData, costInfoSize, offset, previousOffset);
+					for (int32_t m = 0; m < costInfoSize; m++) {
+						CostInfo costInfo;
+						ReadEnum_Cost(binaryData, costInfo.GetCostTypeRef(), offset, previousOffset);
+						ReadInt32_t(binaryData, costInfo.GetCostValueRef(), offset, previousOffset);
+						sourceCriteria.SetCostInfo(costInfo);
+					}
+					int32_t requirementInfoSize;
+					ReadInt32_t(binaryData, requirementInfoSize, offset, previousOffset);
+					for (int32_t m = 0; m < requirementInfoSize; m++) {
+						RequirementInfo requirementInfo;
+						ReadEnum_Requirement(binaryData, requirementInfo.GetRequirementTypeRef(), offset, previousOffset);
+						ReadInt32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
+						sourceCriteria.SetSourceRequirementInfo(requirementInfo);
+					}
+					combineCriteria.SetSourceCriterias(sourceCriteria);
+				}
+				combineInfo.SetCombineCriterias(combineCriteria);
+			}
+			m_CombineInfos.push_back(combineInfo);
 		}
+
+		//Display Screen
+		//for (const auto& item : binaryData) {
+		//	std::cout << item << std::endl;
+		//}
 	}
 	catch (const std::exception&)
 	{
@@ -168,4 +230,59 @@ void DeserializerManager::DisplayScreen() const {
 			}
 		}
 	}
+}
+
+void ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
+	
+	destination = static_cast<uint32_t>(buffer[offset++].to_ulong());
+	previousOffset++;
+}
+void ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t previousOffset) {
+	destination = static_cast<int32_t>(buffer[offset++].to_ulong());
+	previousOffset++;
+}
+void ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destination, uint32_t& offset, uint32_t previousOffset) {
+	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
+	switch (temp)
+	{
+	case 0:
+		destination = Enum_Cost::Silver;
+		break;
+	case 1:
+		destination = Enum_Cost::Billion;
+		break;
+	case 2:
+		destination = Enum_Cost::ContributionPoint;
+		break;
+	case 3:
+		destination = Enum_Cost::BloodPoint;
+		break;
+	default:
+		std::cerr << "There is an error about deserializing binary data.";
+		break;
+	}
+	previousOffset++;
+}
+
+void ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requirement& destination, uint32_t& offset, uint32_t previousOffset) {
+	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
+	switch (temp)
+	{
+	case 0:
+		destination = Enum_Requirement::Enchanment;
+		break;
+	case 1:
+		destination = Enum_Requirement::Combine;
+		break;
+	case 2:
+		destination = Enum_Requirement::Refine;
+		break;
+	case 3:
+		destination = Enum_Requirement::Socket;
+		break;
+	default:
+		std::cerr << "There is an error about deserializing binary data.";
+		break;
+	}
+	previousOffset++;
 }

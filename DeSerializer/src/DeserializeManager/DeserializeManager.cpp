@@ -140,11 +140,10 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesyste
 					ReadInt32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
 					combineCriteria.SetTargetRequirementInfo(requirementInfo);
 				}
-				SourceCriteria sourceCriteria;
 				uint32_t sourceCriteriaSize;
 				ReadUint32_t(binaryData, sourceCriteriaSize, offset, previousOffset);
 				for (int32_t k = 0; k < sourceCriteriaSize; k++) {
-					
+					SourceCriteria sourceCriteria;
 					ReadUint32_t(binaryData, sourceCriteria.GetSourceItemIdRef(), offset, previousOffset);
 					int32_t costInfoSize;
 					ReadInt32_t(binaryData, costInfoSize, offset, previousOffset);
@@ -169,10 +168,6 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesyste
 			m_CombineInfos.push_back(combineInfo);
 		}
 
-		//Display Screen
-		//for (const auto& item : binaryData) {
-		//	std::cout << item << std::endl;
-		//}
 	}
 	catch (const std::exception&)
 	{

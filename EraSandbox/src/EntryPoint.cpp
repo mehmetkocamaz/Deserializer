@@ -6,25 +6,25 @@
 #include "SerializeManager/SerializeManager.h"
 
 int main() {
-	//BinaryManager binaryManager;
-	// JSON DATA 
-	//DeserializerManager deserializeManager;
-	//Enum_DeserializationStatus deserializationStatus = 
-	//	deserializeManager.Deserialize(DeserializeSpec{
-	//		.m_FileType = Enum_DeserializeContentType::JSON, .m_FilePath = "resources/target.json" });
+	BinaryManager binaryManager;
+	
+	DeserializerManager deserializeManager;
+	Enum_DeserializationStatus deserializationStatus = 
+		deserializeManager.Deserialize(DeserializeSpec{
+			.m_FileType = Enum_DeserializeContentType::JSON, .m_FilePath = "resources/example.json" });
 
 
 
-	//std::cout << "---JSON DATA---" << std::endl;
-	//deserializeManager.DisplayScreen();
-	//
-	//const std::vector<CombineInfo>& combineInfos= deserializeManager.GetCombineInfos();
+	std::cout << "---JSON DATA---" << std::endl;
+	deserializeManager.DisplayScreen();
+	
+	const std::vector<CombineInfo>& combineInfos= deserializeManager.GetCombineInfos();
 
-	//SerializerManager serializeManager;
-	//serializeManager.Serialize(SerializeSpec{ 
-	//	.m_FileType = Enum_SerizalizeContentType::BINARY,
-	//	.m_FilePath = "output/data2.bin",
-	//	.m_CombineInfos = &combineInfos });
+	SerializerManager serializeManager;
+	serializeManager.Serialize(SerializeSpec{ 
+		.m_FileType = Enum_SerizalizeContentType::BINARY,
+		.m_FilePath = "output/example.bin",
+		.m_CombineInfos = &combineInfos });
 
 	
 
@@ -32,9 +32,10 @@ int main() {
 	DeserializerManager deserializeManager2;
 	Enum_DeserializationStatus deserializationStatus2 =
 		deserializeManager2.Deserialize(DeserializeSpec{
-		.m_FileType = Enum_DeserializeContentType::BINARY, .m_FilePath = "output/data2.bin" });
+		.m_FileType = Enum_DeserializeContentType::BINARY, .m_FilePath = "output/example.bin" });
 
 	deserializeManager2.DisplayScreen();
+	
 	// BINARY DATA 
 	//DeserializerManager deserializeManager2;
 	//std::cout << "---BINARY DATA---" << std::endl;
@@ -43,12 +44,5 @@ int main() {
 	
 	//deserializeManager2.DisplayScreen(); // display Screen fonksiyonunu binary ve json için iki farklý hale getir.
 	
-
-	/*
-	To Do :
-	1 - Deserializer Manager - > BinaryDeserializer (DONE)
-	2 - SetBinaryData fonksiyonunu hiyerarþik þekilde düzenlemek
-	3 - SerializerManager 
-	*/
 
 }

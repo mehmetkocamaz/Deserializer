@@ -6,5 +6,10 @@ workspace "EraTools"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+group "Dependencies"
+   include "EraSandbox/vendor/imgui"
+   include "EraSandbox/vendor/glfw"
+group ""
+
 include "EraSandbox/EraSandbox.lua"
 include "DeSerializer/DeSerializer.lua"

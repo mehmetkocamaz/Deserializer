@@ -16,14 +16,27 @@ enum class Enum_Cost
 	BloodPoint
 };
 
+enum class Enum_Probability
+{
+	Success = 0,
+	Fail = 1,
+	Break = 2
+};
+
 struct CostInfo
 {
-	Enum_Cost m_CostType;
-	int32_t m_CostValue;
+	Enum_Cost m_CostType = Enum_Cost::Silver;
+	uint32_t m_CostValue = 0;
 };
 
 struct RequirementInfo
 {
-	Enum_Requirement m_RequirementType;
-	int32_t m_RequirementValue;
+	Enum_Requirement m_RequirementType = Enum_Requirement::Enchanment;
+	uint32_t m_RequirementValue = 0;
+};
+
+struct ProbabilityInfo
+{
+	Enum_Probability m_ProbabilityType = Enum_Probability::Success;
+	uint32_t m_ProbabilityValue = 0;
 };

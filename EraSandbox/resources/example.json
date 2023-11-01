@@ -1,21 +1,121 @@
 {
-	"SourceCriteria":
-	{
-	"SourceItemId": 123,
-	"CostInfos": 
-	[
-		{
-		"CostType": 0,
-		"CostValue": 123
-		},
-		{
-		"CostType": 1,
-		"CostValue": 123
-		}
-	],
-	"RequirementInfos":
-	[
-	]
-	}
+  "CombineInfos": [
+    {
+      "TargetItemId": 12331,
+      "CombineCriterias": [
+        {
+          "TargetRequirementInfos": [
+            {
+              "RequirementType": 0,
+              "RequirementValue": 42
+            },
+            {
+              "RequirementType": 1,
+              "RequirementValue": 52
+            }
+          ],
+          "SourceCriterias": [
+            {
+              "SourceItemId": 5,
+              "CostInfos": [
+                {
+                  "CostType": 0,
+                  "CostValue": 10
+                },
+                {
+                  "CostType": 1,
+                  "CostValue": 11
+                }
+              ],
+              "SourceRequirementInfos": [
+                {
+                  "RequirementType": 0,
+                  "RequirementValue": 20
+                }
+              ]
+            },
+            {
+              "SourceItemId": 2,
+              "CostInfos": [
+                {
+                  "CostType": 2,
+                  "CostValue": 10
+                },
+                {
+                  "CostType": 2,
+                  "CostValue": 11
+                }
+              ],
+              "SourceRequirementInfos": [
+                {
+                  "RequirementType": 1,
+                  "RequirementValue": 21
+                },
+                {
+                  "RequirementType": 1,
+                  "RequirementValue": 22
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "TargetRequirementInfos": [
+            {
+              "RequirementType": 3,
+              "RequirementValue": 60
+            },
+            {
+              "RequirementType": 2,
+              "RequirementValue": 70
+            }
+          ],
+          "SourceCriterias": [
+            {
+              "SourceItemId": 7,
+              "CostInfos": [
+                {
+                  "CostType": 1,
+                  "CostValue": 15
+                },
+                {
+                  "CostType": 0,
+                  "CostValue": 18
+                }
+              ],
+              "SourceRequirementInfos": [
+                {
+                  "RequirementType": 2,
+                  "RequirementValue": 25
+                }
+              ]
+            },
+            {
+              "SourceItemId": 4,
+              "CostInfos": [
+                {
+                  "CostType": 3,
+                  "CostValue": 12
+                },
+                {
+                  "CostType": 2,
+                  "CostValue": 14
+                }
+              ],
+              "SourceRequirementInfos": [
+                {
+                  "RequirementType": 3,
+                  "RequirementValue": 30
+                },
+                {
+                  "RequirementType": 3,
+                  "RequirementValue": 35
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
-	

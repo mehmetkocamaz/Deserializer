@@ -70,17 +70,60 @@ int main(int argc, char** argv)
 //	// BINARY DATA 
 //	DeserializerManager deserializeManager2;
 //	std::cout << "---BINARY DATA---" << std::endl;
-//	// Binary Deserialize içinde display screen kýsmý var orasý ekrana bastýrýyor.
+//	// Binary Deserialize iÃ§inde display screen kÃ½smÃ½ var orasÃ½ ekrana bastÃ½rÃ½yor.
 //	Enum_DeserializationStatus deserializationStatus2 = deserializeManager2.Deserialize(DeserializeSpec{ .m_FileType = Enum_DeserializeContentType::BINARY, .m_FilePath = "output/data.bin" });
 //	
-//	deserializeManager2.DisplayScreen(); // display Screen fonksiyonunu binary ve json için iki farklý hale getir.
+//	deserializeManager2.DisplayScreen(); // display Screen fonksiyonunu binary ve json iÃ§in iki farklÃ½ hale getir.
 //	
 //
 //	/*
 //	To Do :
 //	1 - Deserializer Manager - > BinaryDeserializer (DONE)
-//	2 - SetBinaryData fonksiyonunu hiyerarþik þekilde düzenlemek
+//	2 - SetBinaryData fonksiyonunu hiyerarÃ¾ik Ã¾ekilde dÃ¼zenlemek
 //	3 - SerializerManager 
 //	*/
 //
 //}
+/*
+int main() {
+	BinaryManager binaryManager;
+	
+	DeserializerManager deserializeManager;
+	Enum_DeserializationStatus deserializationStatus = 
+		deserializeManager.Deserialize(DeserializeSpec{
+			.m_FileType = Enum_DeserializeContentType::JSON, .m_FilePath = "resources/example.json" });
+
+
+
+	std::cout << "---JSON DATA---" << std::endl;
+	deserializeManager.DisplayScreen();
+	
+	const std::vector<CombineInfo>& combineInfos= deserializeManager.GetCombineInfos();
+
+	SerializerManager serializeManager;
+	serializeManager.Serialize(SerializeSpec{ 
+		.m_FileType = Enum_SerizalizeContentType::BINARY,
+		.m_FilePath = "output/example.bin",
+		.m_CombineInfos = &combineInfos });
+
+	
+
+	std::cout << "---BINARY DATA---" << std::endl;
+	DeserializerManager deserializeManager2;
+	Enum_DeserializationStatus deserializationStatus2 =
+		deserializeManager2.Deserialize(DeserializeSpec{
+		.m_FileType = Enum_DeserializeContentType::BINARY, .m_FilePath = "output/example.bin" });
+
+	deserializeManager2.DisplayScreen();
+	
+	// BINARY DATA 
+	//DeserializerManager deserializeManager2;
+	//std::cout << "---BINARY DATA---" << std::endl;
+	//// Binary Deserialize iÃ§inde display screen kÃ½smÃ½ var orasÃ½ ekrana bastÃ½rÃ½yor.
+	//Enum_DeserializationStatus deserializationStatus2 = deserializeManager2.Deserialize(DeserializeSpec{ .m_FileType = Enum_ContentType::BINARY, .m_FilePath = "output/data.bin" });
+	
+	//deserializeManager2.DisplayScreen(); // display Screen fonksiyonunu binary ve json iÃ§in iki farklÃ½ hale getir.
+	
+
+}
+*/

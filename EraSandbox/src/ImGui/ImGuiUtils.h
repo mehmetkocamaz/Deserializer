@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include <functional>
 #include <string>
+
 namespace ImGuiUtils
 {
 	static void ColoredButton(std::string text, const ImVec2& size, const ImVec4& color, const std::function<void()>& callback) {
@@ -25,6 +26,7 @@ namespace ImGuiUtils
 		draw_list->AddRect(p_min, p_max, IM_COL32(255, 0, 0, 255));  // red border
 		return false;
 	}
+
 	static ImVec4 imDarkRed = ImVec4(0.8f, 0.0f, 0.0f, 1.0f);
 	static ImVec4 imDarkGreen = ImVec4(0.0f, 0.5f, 0.0f, 1.0f);
 

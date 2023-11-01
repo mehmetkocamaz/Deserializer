@@ -13,18 +13,22 @@ enum class Enum_DeserializationStatus
 };
 
 class DeserializerManager {
+
+public:
+	DeserializerManager(DeserializeSpec DeserializeSpecification) 
+		: m_DeserializeSpecification(DeserializeSpecification) { }
+
+	void SetCombineInfos(CombineInfo&);
+	std::vector<CombineInfo> GetCombineInfos() const;
+	Enum_DeserializationStatus Deserialize();
+	void DisplayScreen() const;
+
 private:
 	std::vector<CombineInfo> m_CombineInfos;
 	std::filesystem::path m_FilePath;
 	//Enum_DeserializationStatus JsonDeserialize(m_FilePath);
-	Enum_DeserializationStatus JsonDeserialize(std::filesystem::path filePath);
-	Enum_DeserializationStatus BinaryDeserialize(std::filesystem::path filePath);
-public:
-	//DeserializerManager(std::filesystem::path filePath) 
-	//	: m_FilePath(filePath) { }
-	void SetCombineInfos(CombineInfo&);
-	std::vector<CombineInfo> GetCombineInfos() const;
-	Enum_DeserializationStatus Deserialize(const DeserializeSpec& deserializeSpec);
-	void DisplayScreen() const;
+	Enum_DeserializationStatus JsonDeserialize();
+	Enum_DeserializationStatus BinaryDeserialize();
+	DeserializeSpec m_DeserializeSpecification;
 };
 

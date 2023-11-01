@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <bitset>
+
 using json = nlohmann::json;
 void ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset);
 void ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t previousOffset);
@@ -12,21 +13,21 @@ void ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requi
 
 // DESERIALIZER MANAGER FUNCTION DECLARATIONS
 
-Enum_DeserializationStatus DeserializerManager::Deserialize(const DeserializeSpec& deserializeSpec)
+Enum_DeserializationStatus DeserializerManager::Deserialize()
 {
-	switch (deserializeSpec.m_FileType)
+	switch (m_DeserializeSpecification.m_FileType)
 	{
 	case Enum_DeserializeContentType::JSON:
-		return JsonDeserialize(deserializeSpec.m_FilePath);
+		return JsonDeserialize();
 	case Enum_DeserializeContentType::BINARY:
-		return BinaryDeserialize(deserializeSpec.m_FilePath);
+		return BinaryDeserialize();
 	default:
 		return Enum_DeserializationStatus::UNSUPPORTED;
 	}
 }
 
-Enum_DeserializationStatus DeserializerManager::JsonDeserialize( std::filesystem::path filePath) {
-	std::ifstream file(filePath);
+Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
+	std::ifstream file(m_DeserializeSpecification.m_FilePath);
 	if (!file.is_open()) {
 		std::cerr << "The json file cannot opened." << std::endl;
 		return Enum_DeserializationStatus::OPEN_FILE_ERROR;
@@ -93,10 +94,10 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize( std::filesystem
 }
 
 
-Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesystem::path filePath)
+Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 {
 	
-	std::ifstream readData(filePath, std::ios::binary);
+	std::ifstream readData(m_DeserializeSpecification.m_FilePath, std::ios::binary);
 	if (!readData.is_open())
 	{
 		std::cerr << "data.bin cannot opened!!" << std::endl;
@@ -112,10 +113,8 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesyste
 		}
 		readData.close();
 
-
 		std::vector<uint32_t> totalBytesRead;
 		uint32_t combineInfoSize = binaryData[0].to_ulong();
-
 
 		for (int32_t i = 0; i < combineInfoSize; i++) {
 			CombineInfo combineInfo;
@@ -137,7 +136,7 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesyste
 				{
 					RequirementInfo requirementInfo;
 					ReadEnum_Requirement(binaryData, requirementInfo.GetRequirementTypeRef(), offset, previousOffset);
-					ReadInt32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
+					ReadUint32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
 					combineCriteria.SetTargetRequirementInfo(requirementInfo);
 				}
 				uint32_t sourceCriteriaSize;
@@ -150,7 +149,7 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesyste
 					for (int32_t m = 0; m < costInfoSize; m++) {
 						CostInfo costInfo;
 						ReadEnum_Cost(binaryData, costInfo.GetCostTypeRef(), offset, previousOffset);
-						ReadInt32_t(binaryData, costInfo.GetCostValueRef(), offset, previousOffset);
+						ReadUint32_t(binaryData, costInfo.GetCostValueRef(), offset, previousOffset);
 						sourceCriteria.SetCostInfo(costInfo);
 					}
 					int32_t requirementInfoSize;
@@ -158,7 +157,7 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize(std::filesyste
 					for (int32_t m = 0; m < requirementInfoSize; m++) {
 						RequirementInfo requirementInfo;
 						ReadEnum_Requirement(binaryData, requirementInfo.GetRequirementTypeRef(), offset, previousOffset);
-						ReadInt32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
+						ReadUint32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
 						sourceCriteria.SetSourceRequirementInfo(requirementInfo);
 					}
 					combineCriteria.SetSourceCriterias(sourceCriteria);

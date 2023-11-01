@@ -27,6 +27,12 @@
                   "CostValue": 11
                 }
               ],
+              "ProbabilityInfos": [
+                {
+                  "ProbabilityType": 1,
+                  "ProbabilityValue": 10
+                }
+              ],
               "SourceRequirementInfos": [
                 {
                   "RequirementType": 0,

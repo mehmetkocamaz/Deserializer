@@ -38,7 +38,7 @@ struct RequirementInfo
 
 	Enum_Requirement m_RequirementType = Enum_Requirement::Enchanment;
 	uint32_t m_RequirementValue = 0;
-  Enum_Requirement& GetRequirementTypeRef() { return m_RequirementType; }
+	Enum_Requirement& GetRequirementTypeRef() { return m_RequirementType; }
 	uint32_t& GetRequirementValueRef() { return m_RequirementValue; }
 };
 

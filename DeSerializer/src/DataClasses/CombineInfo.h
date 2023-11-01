@@ -24,18 +24,3 @@ private:
 	uint32_t m_TargetItemId = 0; // Always default initialize
 	std::vector<CombineCriteria> m_CombineCriterias;
 };
-
-
-
-
-//vector<CombineInfo> 0. 
-//
-//4 byte
-//
-//00 00 00 00 
-//
-//
-//00 00 00 00 
-//
-//00 00 00 00
-//

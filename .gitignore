@@ -43,3 +43,4 @@
 *.vcxproj
 *.filters
 *.user
+/bin-int/Debug-windows-x86_64/EraSandbox

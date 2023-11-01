@@ -27,23 +27,23 @@ kind "StaticLib"
    filter "system:windows"
       systemversion "latest"
       characterset "MBCS"
-      defines { "NV_PLATFORM_WINDOWS" }
+      defines { "ERA_PLATFORM_WINDOWS" }
 
    filter "configurations:Debug"
-      defines { "NV_DEBUG" }
+      defines { "ERA_DEBUG" }
       runtime "Debug"
       symbols "On"
       staticruntime "On"
 
    filter "configurations:Release"
-      defines { "NV_RELEASE" }
+      defines { "ERA_RELEASE" }
       runtime "Release"
       optimize "On"
       symbols "On"
       staticruntime "On"
 
    filter "configurations:Dist"
-      defines { "NV_DIST" }
+      defines { "ERA_DIST" }
       runtime "Release"
       optimize "On"
       symbols "Off"

@@ -7,25 +7,37 @@ project "EraSandbox"
 
     files { "src/**.h", "src/**.cpp" }
 
+    VULKAN_SDK = os.getenv("VULKAN_SDK")
+
+    IncludeDir = {}
+    IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
+    IncludeDir["glm"] = "vendor/glm"
+    
+    LibraryDir = {}
+    LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
+    
+    Library = {}
+    Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
+    
     includedirs
     {
-        "src",
-         "../DeSerializer/src",
-         "../DeSerializer/vendor/json"
-
+      "src",
+      "../DeSerializer/src",
+      "../DeSerializer/vendor/json",
+      "vendor/imgui",
+      "vendor/glfw/include",
+      "vendor/stb_image",
+      "%{IncludeDir.VulkanSDK}",
+      "%{IncludeDir.glm}"
     }
-    libdirs{
-
-	}
 
     links
     {
-      "DeSerializer"
-
-        -- "zlib.lib"
+      "DeSerializer",
+      "ImGui",
+      "GLFW",
+      "%{Library.Vulkan}"
     }
-
-    
 
     targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
     objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
@@ -33,16 +45,16 @@ project "EraSandbox"
     filter "system:windows"
        systemversion "latest"
        characterset "MBCS"
-       defines { "NV_PLATFORM_WINDOWS" }
+       defines { "ERA_PLATFORM_WINDOWS" }
  
     filter "configurations:Debug"
-       defines { "NV_DEBUG" }
+       defines { "ERA_DEBUG" }
        runtime "Debug"
        symbols "On"
        staticruntime "On"
  
     filter "configurations:Release"
-       defines { "NV_RELEASE" }
+       defines { "ERA_RELEASE" }
        runtime "Release"
        optimize "On"
        symbols "On"
@@ -50,8 +62,9 @@ project "EraSandbox"
  
     filter "configurations:Dist"
        kind "WindowedApp"
-       defines { "NV_DIST" }
+       defines { "ERA_DIST" }
        runtime "Release"
        optimize "On"
        symbols "Off"
        staticruntime "On"
+

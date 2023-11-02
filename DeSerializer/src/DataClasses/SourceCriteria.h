@@ -10,16 +10,16 @@ public:
 		m_SourceItemId = sourceItemId;
 	}
 
-	void SetCostInfo(const CostInfo& costInfo)
+	void PushCostInfo(const CostInfo& costInfo)
 	{
 		m_CostInfos.push_back(costInfo);
 	}
 
-	void SetSourceRequirementInfo(const RequirementInfo& requirementInfo)
+	void PushSourceRequirementInfo(const RequirementInfo& requirementInfo)
 	{
 		m_SourceRequirementInfos.push_back(requirementInfo);
 	}
-	void SetProbabilityInfo(const ProbabilityInfo& probabilityInfo)
+	void PushProbabilityInfo(const ProbabilityInfo& probabilityInfo)
 	{
 		m_ProbabilityInfos.push_back(probabilityInfo);
 	}

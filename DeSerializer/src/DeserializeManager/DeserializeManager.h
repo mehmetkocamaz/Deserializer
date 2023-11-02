@@ -19,20 +19,26 @@ public:
 	DeserializerManager(DeserializeSpec DeserializeSpecification) 
 		: m_DeserializeSpecification(DeserializeSpecification) { }
 
-	void SetCombineInfos(CombineInfo&);
+#pragma region Setters
+	void PushCombineInfos(CombineInfo& obj) { m_CombineInfos.push_back(obj); }
+#pragma endregion
+#pragma region Getters
 	std::vector<CombineInfo> GetCombineInfos() const;
-	Enum_DeserializationStatus Deserialize();
-	void DisplayScreen() const;
+#pragma endregion
 
+	Enum_DeserializationStatus Deserialize();
+	// BinaryDeserializer Reader Functions
 	void ReadUint32_t(const std::vector<std::bitset<32>>&, uint32_t&, uint32_t&, uint32_t&);
 	void ReadInt32_t(const std::vector<std::bitset<32>>&, int32_t&, uint32_t&, uint32_t&);
 	void ReadEnum_Cost(const std::vector<std::bitset<32>>&, Enum_Cost&, uint32_t&, uint32_t&);
 	void ReadEnum_Requirement(const std::vector<std::bitset<32>>&, Enum_Requirement&, uint32_t&, uint32_t&);
 	void ReadEnum_Probability(const std::vector<std::bitset<32>>&, Enum_Probability&, uint32_t&, uint32_t&);
+
+	
+	void DisplayScreen() const;
 private:
 	std::vector<CombineInfo> m_CombineInfos;
 	std::filesystem::path m_FilePath;
-	//Enum_DeserializationStatus JsonDeserialize(m_FilePath);
 	Enum_DeserializationStatus JsonDeserialize();
 	Enum_DeserializationStatus BinaryDeserialize();
 	DeserializeSpec m_DeserializeSpecification;

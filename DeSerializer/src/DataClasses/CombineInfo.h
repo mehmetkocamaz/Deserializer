@@ -6,20 +6,16 @@
 class CombineInfo
 {
 public:
-	void SetTargetItemId(uint32_t);
-	void SetCombineCriterias(CombineCriteria&);
-	uint32_t GetTargetItemId() const;
-
-	uint32_t& GetTargetItemIdRef()
-	{
-		return m_TargetItemId;
-	}
-
-	std::vector<CombineCriteria> GetCombineCriterias() const;
-	std::vector<CombineCriteria>& GetCombineCriteriasRef()
-	{
-		return m_CombineCriterias;
-	}
+#pragma region Setters
+	void SetTargetItemId(uint32_t id) { m_TargetItemId = id; }
+	void PushCombineCriterias(CombineCriteria& obj) { m_CombineCriterias.push_back(obj); }
+#pragma endregion
+#pragma region Getters
+	uint32_t GetTargetItemId() const { return m_TargetItemId; }
+	uint32_t& GetTargetItemIdRef() { return m_TargetItemId; }
+	std::vector<CombineCriteria> GetCombineCriterias() const { return m_CombineCriterias; }
+	std::vector<CombineCriteria>& GetCombineCriteriasRef() { return m_CombineCriterias; }
+#pragma endregion
 private:
 	uint32_t m_TargetItemId = 0; // Always default initialize
 	std::vector<CombineCriteria> m_CombineCriterias;

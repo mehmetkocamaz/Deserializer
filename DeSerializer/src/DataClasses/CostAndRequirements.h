@@ -46,4 +46,6 @@ struct ProbabilityInfo
 {
 	Enum_Probability m_ProbabilityType = Enum_Probability::Success;
 	uint32_t m_ProbabilityValue = 0;
+	Enum_Probability& GetProbabiltyTypeRef() { return m_ProbabilityType; }
+	uint32_t& GetProbabilityValueRef() { return m_ProbabilityValue; }
 };

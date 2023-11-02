@@ -19,6 +19,10 @@ public:
 	{
 		m_SourceRequirementInfos.push_back(requirementInfo);
 	}
+	void SetProbabilityInfo(const ProbabilityInfo& probabilityInfo)
+	{
+		m_ProbabilityInfos.push_back(probabilityInfo);
+	}
 #pragma endregion 
 #pragma region Getters
 	uint32_t GetSourceItemId() const

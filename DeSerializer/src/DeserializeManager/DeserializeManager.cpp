@@ -5,10 +5,7 @@
 #include <bitset>
 
 using json = nlohmann::json;
-void ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset);
-void ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t previousOffset);
-void ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destination, uint32_t& offset, uint32_t previousOffset);
-void ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requirement& destination, uint32_t& offset, uint32_t previousOffset);
+
 
 
 // DESERIALIZER MANAGER FUNCTION DECLARATIONS
@@ -67,6 +64,15 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 						costObj.m_CostType = static_cast<Enum_Cost>(costType);
 						costObj.m_CostValue = costValue;
 						sourceCriteriaClass.SetCostInfo(costObj);
+					}
+					for (const json& probabilityInfos : sourceCriterias["ProbabilityInfos"]) {
+
+						int probabilityType = probabilityInfos["ProbabilityType"];
+						uint32_t probabilityValue = probabilityInfos["ProbabilityValue"];
+						ProbabilityInfo probabilityObj;
+
+						probabilityObj.m_ProbabilityType = static_cast<Enum_Probability>(probabilityType);
+						probabilityObj.m_ProbabilityValue = probabilityValue;
 					}
 					for (const json& sourceRequirementInfos : sourceCriterias["SourceRequirementInfos"])
 					{
@@ -144,6 +150,7 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 				for (int32_t k = 0; k < sourceCriteriaSize; k++) {
 					SourceCriteria sourceCriteria;
 					ReadUint32_t(binaryData, sourceCriteria.GetSourceItemIdRef(), offset, previousOffset);
+					
 					int32_t costInfoSize;
 					ReadInt32_t(binaryData, costInfoSize, offset, previousOffset);
 					for (int32_t m = 0; m < costInfoSize; m++) {
@@ -152,6 +159,16 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 						ReadUint32_t(binaryData, costInfo.GetCostValueRef(), offset, previousOffset);
 						sourceCriteria.SetCostInfo(costInfo);
 					}
+
+					int32_t probabilityInfoSize;
+					ReadInt32_t(binaryData, probabilityInfoSize, offset, previousOffset);
+					for (int32_t m = 0; m < probabilityInfoSize; m++) {
+						ProbabilityInfo probabilityInfo;
+						ReadEnum_Probability(binaryData, probabilityInfo.GetProbabiltyTypeRef(), offset, previousOffset);
+						ReadUint32_t(binaryData, probabilityInfo.GetProbabilityValueRef(), offset, previousOffset);
+						sourceCriteria.SetProbabilityInfo(probabilityInfo);
+					}
+
 					int32_t requirementInfoSize;
 					ReadInt32_t(binaryData, requirementInfoSize, offset, previousOffset);
 					for (int32_t m = 0; m < requirementInfoSize; m++) {
@@ -226,16 +243,16 @@ void DeserializerManager::DisplayScreen() const {
 	}
 }
 
-void ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
+void DeserializerManager::ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
 	
 	destination = static_cast<uint32_t>(buffer[offset++].to_ulong());
 	previousOffset++;
 }
-void ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t previousOffset) {
+void DeserializerManager::ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
 	destination = static_cast<int32_t>(buffer[offset++].to_ulong());
 	previousOffset++;
 }
-void ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destination, uint32_t& offset, uint32_t previousOffset) {
+void DeserializerManager::ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destination, uint32_t& offset, uint32_t& previousOffset) {
 	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
 	switch (temp)
 	{
@@ -258,7 +275,7 @@ void ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destin
 	previousOffset++;
 }
 
-void ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requirement& destination, uint32_t& offset, uint32_t previousOffset) {
+void DeserializerManager::ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requirement& destination, uint32_t& offset, uint32_t& previousOffset) {
 	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
 	switch (temp)
 	{
@@ -280,3 +297,24 @@ void ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requi
 	}
 	previousOffset++;
 }
+
+void DeserializerManager::ReadEnum_Probability(const std::vector<std::bitset<32>>& buffer, Enum_Probability& destination, uint32_t& offset, uint32_t& previousOffset) {
+	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
+	switch (temp)
+	{
+	case 0:
+		destination = Enum_Probability::Success;
+		break;
+	case 1:
+		destination = Enum_Probability::Fail;
+		break;
+	case 2:
+		destination = Enum_Probability::Break;
+		break;
+	default:
+		std::cerr << "There is an error about deserializing binary data.";
+		break;
+	}
+	previousOffset++;
+}
+

@@ -2,6 +2,7 @@
 #include "DataClasses/CombineInfo.h"
 #include "DeserializeSpec.h"
 #include <vector>
+#include <bitset>
 
 enum class Enum_DeserializationStatus
 {
@@ -23,6 +24,11 @@ public:
 	Enum_DeserializationStatus Deserialize();
 	void DisplayScreen() const;
 
+	void ReadUint32_t(const std::vector<std::bitset<32>>&, uint32_t&, uint32_t&, uint32_t&);
+	void ReadInt32_t(const std::vector<std::bitset<32>>&, int32_t&, uint32_t&, uint32_t&);
+	void ReadEnum_Cost(const std::vector<std::bitset<32>>&, Enum_Cost&, uint32_t&, uint32_t&);
+	void ReadEnum_Requirement(const std::vector<std::bitset<32>>&, Enum_Requirement&, uint32_t&, uint32_t&);
+	void ReadEnum_Probability(const std::vector<std::bitset<32>>&, Enum_Probability&, uint32_t&, uint32_t&);
 private:
 	std::vector<CombineInfo> m_CombineInfos;
 	std::filesystem::path m_FilePath;

@@ -4,26 +4,26 @@
 #include "SerializeManager.h"
 #include "BinaryManager/BinaryManager.h"
 
-Enum_SerializationStatus SerializerManager::Serialize(const SerializeSpec& serializeSpec) {
-	switch (serializeSpec.m_FileType)
+Enum_SerializationStatus SerializerManager::Serialize() {
+	switch (m_SerializeSpecification.m_FileType)
 	{
 	case Enum_SerizalizeContentType::JSON:
-		return JsonSerialize(serializeSpec);
+		return JsonSerialize();
 	case Enum_SerizalizeContentType::BINARY:
-		return BinarySerialize(serializeSpec);
+		return BinarySerialize();
 	default:
 		return Enum_SerializationStatus::UNSUPPORTED;
 	}
 }
 
-Enum_SerializationStatus SerializerManager::JsonSerialize(const SerializeSpec& serializeSpec) {
+Enum_SerializationStatus SerializerManager::JsonSerialize() {
 	return Enum_SerializationStatus::SUCCESS;
 }
 
-Enum_SerializationStatus SerializerManager::BinarySerialize(const SerializeSpec& serializeSpec) {
+Enum_SerializationStatus SerializerManager::BinarySerialize() {
 
-	m_BinaryData.push_back(serializeSpec.m_CombineInfos->size());
-	for (const auto& combineInfo : *serializeSpec.m_CombineInfos) {
+	m_BinaryData.push_back(m_SerializeSpecification.m_CombineInfos->size());
+	for (const auto& combineInfo : *m_SerializeSpecification.m_CombineInfos) {
 		m_BinaryData.push_back(combineInfo.GetTargetItemId());
 		m_BinaryData.push_back(combineInfo.GetCombineCriterias().size());
 		for (const auto& combineCriterias : combineInfo.GetCombineCriterias()) {
@@ -40,6 +40,12 @@ Enum_SerializationStatus SerializerManager::BinarySerialize(const SerializeSpec&
 					m_BinaryData.push_back(static_cast<int32_t>(sourceCostInfo.m_CostType));
 					m_BinaryData.push_back(sourceCostInfo.m_CostValue);
 				}
+				m_BinaryData.push_back(sourceCriterias.GetProbabilityInfos().size());
+				for (const auto& probabilityInfo : sourceCriterias.GetProbabilityInfos())
+				{
+					m_BinaryData.push_back(static_cast<int32_t>(probabilityInfo.m_ProbabilityType));
+					m_BinaryData.push_back(probabilityInfo.m_ProbabilityValue);
+				}
 				m_BinaryData.push_back(sourceCriterias.GetSourceRequirementInfos().size());
 				for (const auto& sourceRequirementInfo : sourceCriterias.GetSourceRequirementInfos()) {
 					m_BinaryData.push_back(static_cast<int32_t>(sourceRequirementInfo.m_RequirementType));
@@ -50,7 +56,7 @@ Enum_SerializationStatus SerializerManager::BinarySerialize(const SerializeSpec&
 	}
 
 
-	std::ofstream binaryFile(serializeSpec.m_FilePath, std::ios::binary);
+	std::ofstream binaryFile(m_SerializeSpecification.m_FilePath, std::ios::binary);
 
 	if (!binaryFile.is_open())
 	{

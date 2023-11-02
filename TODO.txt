@@ -1,7 +1,11 @@
 1- Binary Deserialize Class construction
 2- Use constructor instead of passing specs as an argument
-3- Serialize Manager Constructor
-4- Probability Info 
+3- Serialize Manager Constructor (Done) 
+4- Probability Info (Done)
 5- Research about Generic implementation
 6- ImGui
- 
+7- Organize Getters and Setters
+
+
+///////////////////////////////////////
+EntryPoint Main içerisinde konsola çıktı alamıyorum.

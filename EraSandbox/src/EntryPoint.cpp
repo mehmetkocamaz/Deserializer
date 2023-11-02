@@ -14,36 +14,37 @@ namespace EraTools {
 
 	int Main(int argc, char** argv)
 	{
+		
+		//BinaryManager binaryManager;
+		//DeserializeSpec deserializerSpec;
+		//deserializerSpec.m_FilePath = "resources/target.json";
+		//deserializerSpec.m_FileType = Enum_DeserializeContentType::JSON;
 
-		/*BinaryManager binaryManager;
-
-		DeserializerManager deserializeManager;
-		Enum_DeserializationStatus deserializationStatus =
-			deserializeManager.Deserialize(DeserializeSpec{
-				.m_FileType = Enum_DeserializeContentType::JSON, .m_FilePath = "resources/example.json" });
-
-
-
-		std::cout << "---JSON DATA---" << std::endl;
-		deserializeManager.DisplayScreen();
-
-		const std::vector<CombineInfo>& combineInfos = deserializeManager.GetCombineInfos();
-
-		SerializerManager serializeManager;
-		serializeManager.Serialize(SerializeSpec{
-			.m_FileType = Enum_SerizalizeContentType::BINARY,
-			.m_FilePath = "output/example.bin",
-			.m_CombineInfos = &combineInfos });
+		//DeserializerManager deserializeManager(deserializerSpec);
+		//Enum_DeserializationStatus deserializationStatus = deserializeManager.Deserialize();
 
 
 
-		std::cout << "---BINARY DATA---" << std::endl;
-		DeserializerManager deserializeManager2;
-		Enum_DeserializationStatus deserializationStatus2 =
-			deserializeManager2.Deserialize(DeserializeSpec{
-			.m_FileType = Enum_DeserializeContentType::BINARY, .m_FilePath = "output/example.bin" });
+		//std::cout << "---JSON DATA---" << std::endl;
+		//deserializeManager.DisplayScreen();
 
-		deserializeManager2.DisplayScreen();*/
+		//const std::vector<CombineInfo>& combineInfos = deserializeManager.GetCombineInfos();
+
+		//SerializerManager serializeManager;
+		//serializeManager.Serialize(SerializeSpec{
+		//	.m_FileType = Enum_SerizalizeContentType::BINARY,
+		//	.m_FilePath = "output/example.bin",
+		//	.m_CombineInfos = &combineInfos });
+
+
+
+		//std::cout << "---BINARY DATA---" << std::endl;
+		//DeserializerManager deserializeManager2;
+		//Enum_DeserializationStatus deserializationStatus2 =
+		//	deserializeManager2.Deserialize(DeserializeSpec{
+		//	.m_FileType = Enum_DeserializeContentType::BINARY, .m_FilePath = "output/example.bin" });
+
+		//deserializeManager2.DisplayScreen();
 
 		// BINARY DATA 
 		//DeserializerManager deserializeManager2;

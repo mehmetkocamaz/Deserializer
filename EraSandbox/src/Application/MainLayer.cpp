@@ -1,6 +1,45 @@
 #include "MainLayer.h"
+#include "BinaryManager/BinaryManager.h"
+#include "DeserializeManager/DeserializeManager.h"
+#include "SerializeManager/SerializeManager.h"
 
 void MainLayer::OnUIRender(){
+	static std::vector<CombineInfo> cmb;
+	ImGui::Begin("Sandbox");
+	if(ImGui::Button("Deserialize")) {
+		SaveOptions options =
+		{
+					.m_SaveFlags = Enum_Save(E_Decompress | E_XorFilter),
+					.m_XorKey = 30,
+					.m_FilePath = "output/compressed.bin"
+		};
+		DeserializerManager deserializeManager(DeserializeSpec{ .m_FileType = Enum_DeserializeContentType::BINARY, .m_SaveOptions = options});
+		Enum_DeserializationStatus status = deserializeManager.Deserialize();
+		 cmb = deserializeManager.GetCombineInfos();
+
+		 SaveOptions options2 =
+		 {
+					 .m_SaveFlags = Enum_Save(E_Decompress | E_XorFilter),
+					 .m_XorKey = 30,
+					 .m_FilePath = "resources/target.json"
+		 };
+		 DeserializerManager deserializeManager2(DeserializeSpec{ .m_FileType = Enum_DeserializeContentType::JSON, .m_SaveOptions = options2 });
+		 Enum_DeserializationStatus status2 = deserializeManager2.Deserialize();
+		 cmb = deserializeManager2.GetCombineInfos();
+	}
+	if (ImGui::Button("Serialize"))
+	{
+		SerializerManager serializeManager(SerializeSpec{ .m_ContentType = Enum_SerizalizeContentType::BINARY, .m_CombineInfos = &cmb });
+		Enum_SerializationStatus status = serializeManager.Serialize();
+		SaveOptions options = 
+		{
+					.m_SaveFlags = Enum_Save(E_Compress | E_XorFilter),
+					.m_XorKey = 30,
+					.m_FilePath = "output/compressed.bin"
+		};
+		status = serializeManager.ProcessForSave(options);
+	}
+	ImGui::End();
 	ImGui::Begin("Editor");
 	std::vector<CombineInfo>& combineInfos = CombineInfoRoot::Instance().m_CombineInfos;
 	// Iterate over the tree nodes and create a tree node for each element

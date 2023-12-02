@@ -50,7 +50,7 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 					RequirementInfo reqObj;
 					reqObj.m_RequirementType = static_cast<Enum_Requirement>(requirementType);
 					reqObj.m_RequirementValue = targetRequirementInfos["RequirementValue"];
-					combineCriteriaClass.SetTargetRequirementInfo(reqObj);
+					combineCriteriaClass.PushTargetRequirementInfo(reqObj);
 				}
 				for (const json& sourceCriterias : combineCriterias["SourceCriterias"]) {
 					SourceCriteria sourceCriteriaClass;
@@ -64,7 +64,7 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 						CostInfo costObj;
 						costObj.m_CostType = static_cast<Enum_Cost>(costType);
 						costObj.m_CostValue = costValue;
-						sourceCriteriaClass.SetCostInfo(costObj);
+						sourceCriteriaClass.PushCostInfo(costObj);
 					}
 					for (const json& probabilityInfos : sourceCriterias["ProbabilityInfos"]) {
 
@@ -84,11 +84,11 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 						RequirementInfo reqObj;
 						reqObj.m_RequirementType = static_cast<Enum_Requirement>(requirementType);
 						reqObj.m_RequirementValue = requirementValue;
-						sourceCriteriaClass.SetSourceRequirementInfo(reqObj);
+						sourceCriteriaClass.PushSourceRequirementInfo(reqObj);
 					}
-					combineCriteriaClass.SetSourceCriterias(sourceCriteriaClass);
+					combineCriteriaClass.PushSourceCriterias(sourceCriteriaClass);
 				}
-				combineInfoClass.SetCombineCriterias(combineCriteriaClass);
+				combineInfoClass.PushCombineCriterias(combineCriteriaClass);
 			}
 			m_CombineInfos.push_back(combineInfoClass);
 		}
@@ -184,9 +184,9 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 						Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementValueRef(), offset);
 						sourceCriteria.SetSourceRequirementInfo(requirementInfo);
 					}
-					combineCriteria.SetSourceCriterias(sourceCriteria);
+					combineCriteria.PushSourceCriterias(sourceCriteria);
 				}
-				combineInfo.SetCombineCriterias(combineCriteria);
+				combineInfo.PushCombineCriterias(combineCriteria);
 			}
 			m_CombineInfos.push_back(combineInfo);
 		}
@@ -195,11 +195,7 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 	return Enum_DeserializationStatus::SUCCESS;
 }
 
-// ~Setters
-void DeserializerManager::SetCombineInfos(CombineInfo& obj) {
-	m_CombineInfos.push_back(obj);
-}
-// ~Getters
+
 std::vector<CombineInfo> DeserializerManager::GetCombineInfos() const {
 	return m_CombineInfos;
 }

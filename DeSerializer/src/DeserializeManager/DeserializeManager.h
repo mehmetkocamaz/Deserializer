@@ -19,13 +19,20 @@ public:
 	DeserializerManager(DeserializeSpec DeserializeSpecification) 
 		: m_DeserializeSpecification(DeserializeSpecification) { }
 
-	void SetCombineInfos(CombineInfo&);
+#pragma region Setters
+	void PushCombineInfos(CombineInfo& obj) { m_CombineInfos.push_back(obj); }
+#pragma endregion
+#pragma region Getters
 	std::vector<CombineInfo> GetCombineInfos() const;
+#pragma endregion
+
 	Enum_DeserializationStatus Deserialize();
 	void DisplayScreen() const;
 
 private:
 	std::vector<CombineInfo> m_CombineInfos;
+	std::filesystem::path m_FilePath;
+	//Enum_DeserializationStatus JsonDeserialize(m_FilePath);
 	Enum_DeserializationStatus JsonDeserialize();
 	Enum_DeserializationStatus BinaryDeserialize();
 	DeserializeSpec m_DeserializeSpecification;

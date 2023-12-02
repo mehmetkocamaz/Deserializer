@@ -10,19 +10,20 @@ public:
 		m_SourceItemId = sourceItemId;
 	}
 
-	void PushCostInfo(const CostInfo& costInfo)
+	void SetCostInfo(const CostInfo& costInfo)
 	{
 		m_CostInfos.push_back(costInfo);
 	}
 
-	void PushSourceRequirementInfo(const RequirementInfo& requirementInfo)
+	void SetSourceRequirementInfo(const RequirementInfo& requirementInfo)
 	{
 		m_SourceRequirementInfos.push_back(requirementInfo);
 	}
-	void PushProbabilityInfo(const ProbabilityInfo& probabilityInfo)
+	void SetProbabilityInfo(const ProbabilityInfo& probabilityInfo)
 	{
 		m_ProbabilityInfos.push_back(probabilityInfo);
 	}
+
 #pragma endregion 
 #pragma region Getters
 	uint32_t GetSourceItemId() const

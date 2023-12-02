@@ -84,12 +84,19 @@ void MainLayer::OnUIRender(){
 										SourceCriteria sourceCriteria;
 										v_CombineInfos[n].GetCombineCriteriasRef()[i].PushSourceCriterias(sourceCriteria);
 									}
+
 								if (targetRequirementTrailing)
+								{
 									if (ImGui::TabItemButton("+ Target Requirement", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip))
 									{
-										RequirementInfo targetRequirementInfo;
-										v_CombineInfos[n].GetCombineCriteriasRef()[i].PushTargetRequirementInfo(targetRequirementInfo);
+										if (v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfo().size() < 4)
+										{
+											RequirementInfo targetRequirementInfo;
+											v_CombineInfos[n].GetCombineCriteriasRef()[i].PushTargetRequirementInfo(targetRequirementInfo);
+										}
 									}
+								}
+
 
 								for (int32_t k = 0; k < v_CombineInfos[n].GetCombineCriterias()[i].GetSourceCriterias().size(); )
 								{
@@ -106,56 +113,35 @@ void MainLayer::OnUIRender(){
 										k++;
 								}
 
-								for (int32_t l = 0; l < v_CombineInfos[n].GetCombineCriterias()[i].GetTargetRequirementInfo().size(); )
+								uint32_t v_Counter = 0;
+								std::vector<RequirementInfo>& v_TargetRequirementInfos = v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef();
+								for (RequirementInfo& v_TargetRequirementInfo : v_TargetRequirementInfos)
 								{
 									RequirementInfo targetRequirementInfo;
 									bool openTargetReq = true;
 									char name3[30];
-									snprintf(name3, IM_ARRAYSIZE(name3), "%s %d", "Target Requirement", l + 1);
+									const char* buffer[4] = { "Enchanment" , "Combine" , "Refine", "Socket" };
+									snprintf(name3, IM_ARRAYSIZE(name3), "%s %s %d", buffer[(uint32_t)v_TargetRequirementInfo.m_RequirementType], " Info", v_Counter + 1);
 
 									if (ImGui::BeginTabItem(name3, &openTargetReq, ImGuiTabItemFlags_None)) {
 
-										ImGui::Text("Requirement Type");
-										Enum_Requirement requirementType;
-										if (ImGui::Button("New Requirement Info")) {
-											v_CombineInfos[n].GetCombineCriterias()[i].GetTargetRequirementInfoRef().push_back(targetRequirementInfo);
-										}
-										for (int32_t requirementCounter = 0; requirementCounter < v_CombineInfos[n].GetCombineCriterias()[i].GetTargetRequirementInfoRef().size(); requirementCounter++) {
-											ImGui::Text("Requirement Type:\n");
-											char comboName[30];
-											const char* buffer[4] = { "Enchanment\0" , "Combine\0" , "Refine\0", "Socket\0" };
-											snprintf(comboName, IM_ARRAYSIZE(comboName), "%s %d", "Requirement Type", requirementCounter);
-											int32_t selected = 0;
-											if (ImGui::Combo(comboName, &selected, buffer, IM_ARRAYSIZE(buffer))) {
-												//requirementValues.push_back(0);
-												ImGui::Text("Hello");
-											}
-											if(-1 == selected){
-												continue;
-											}
-											else
-												requirementType = static_cast<Enum_Requirement>(selected);
+										ImGui::Text("Requirement Type:\n");
+										char comboName[30];
+										const char* buffer[4] = { "Enchanment" , "Combine" , "Refine", "Socket" };
+										snprintf(comboName, IM_ARRAYSIZE(comboName), "%s %d", "Requirement Type", v_Counter + 1);
 
-											targetRequirementInfo.m_RequirementType = requirementType;
+										if (ImGui::Combo(comboName, (int32_t*)&v_TargetRequirementInfo.m_RequirementType, buffer, IM_ARRAYSIZE(buffer))) {}
 
-											char reqValue[30];
-											snprintf(reqValue, IM_ARRAYSIZE(reqValue), "%s %d", "Requirement Value", requirementCounter);
-											//ImGui::InputScalar(reqValue, ImGuiDataType_U32, &requirementValues[requirementCounter], NULL, NULL, "%u");
-
-											//targetRequirementInfo.m_RequirementValue = requirementValues[requirementCounter];
-
-											//ImGui::Text("%u", requirementValues[requirementCounter]);
-
-											v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef()[l].m_RequirementType = targetRequirementInfo.m_RequirementType;
-											v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef()[l].m_RequirementValue = targetRequirementInfo.m_RequirementValue;
-										}
+										char reqValue[30];
+										snprintf(reqValue, IM_ARRAYSIZE(reqValue), "%s %d", "Requirement Value", v_Counter + 1);
+										ImGui::InputScalar(reqValue, ImGuiDataType_U32, &v_TargetRequirementInfo.m_RequirementValue, NULL, NULL, "%u");
 
 										ImGui::EndTabItem();
 									}
 									if (!openTargetReq)
-										v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef().erase(v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef().begin() + l);
+										v_TargetRequirementInfos.erase(v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef().begin() + v_Counter);
 									else
-										l++;
+										++v_Counter;
 								}
 
 								ImGui::EndTabBar();
@@ -167,7 +153,6 @@ void MainLayer::OnUIRender(){
 						else
 							i++;
 					}	
-					
 
 					ImGui::EndTabBar();
 				}

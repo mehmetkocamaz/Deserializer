@@ -64,7 +64,7 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 						CostInfo costObj;
 						costObj.m_CostType = static_cast<Enum_Cost>(costType);
 						costObj.m_CostValue = costValue;
-						sourceCriteriaClass.PushCostInfo(costObj);
+						sourceCriteriaClass.SetCostInfo(costObj);
 					}
 					for (const json& probabilityInfos : sourceCriterias["ProbabilityInfos"]) {
 
@@ -84,7 +84,7 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 						RequirementInfo reqObj;
 						reqObj.m_RequirementType = static_cast<Enum_Requirement>(requirementType);
 						reqObj.m_RequirementValue = requirementValue;
-						sourceCriteriaClass.PushSourceRequirementInfo(reqObj);
+						sourceCriteriaClass.SetSourceRequirementInfo(reqObj);
 					}
 					combineCriteriaClass.PushSourceCriterias(sourceCriteriaClass);
 				}
@@ -150,7 +150,7 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 					RequirementInfo requirementInfo;
 					Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementTypeRef(), offset);
 					Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementValueRef(), offset);
-					combineCriteria.SetTargetRequirementInfo(requirementInfo);
+					combineCriteria.PushTargetRequirementInfo(requirementInfo);
 				}
 				uint32_t sourceCriteriaSize;
 				Utils::ReadFromBuffer(decompressedDataBuffer, sourceCriteriaSize, offset);

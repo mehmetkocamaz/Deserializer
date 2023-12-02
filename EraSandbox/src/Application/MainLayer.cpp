@@ -1,158 +1,192 @@
 #include "MainLayer.h"
+#include "CombineInfoRoot.h"
 
 void MainLayer::OnUIRender(){
-	ImGui::Begin("Editor");
-	std::vector<CombineInfo>& combineInfos = CombineInfoRoot::Instance().m_CombineInfos;
-	// Iterate over the tree nodes and create a tree node for each element
-	for (int i = 0; i < combineInfos.size(); i++)
-	{
-		// Create a tree node with a dynamic label
-		if (ImGui::TreeNode((std::string("Combine Info ") + std::to_string(i)).c_str()))
-		{
-			// This code will be executed when the tree node is expanded.
-			// Add your tree node content here.
-			ImGui::SetNextItemWidth(100);
-			ImGui::InputScalar("Target Item Id", ImGuiDataType_U32, &combineInfos[i].GetTargetItemIdRef(), NULL, NULL, "%u");
-			std::vector<CombineCriteria>& combineCriterias = combineInfos[i].GetCombineCriteriasRef();
-			for (int i = 0; i < combineCriterias.size(); i++)
-			{
-				if (ImGui::TreeNode((std::string("Combine Criteria ") + std::to_string(i)).c_str()))
-				{
-					if (ImGui::TreeNode((std::string("Target Requirement Infos ").c_str())))
-					{
-						std::vector<RequirementInfo>& targetRequirementInfos = combineCriterias[i].GetTargetRequirementInfoRef();
-						for (int i = 0; i < targetRequirementInfos.size(); i++)
-						{
-							if (ImGui::TreeNode((std::string("Target Requirement Info ") + std::to_string(i)).c_str()))
-							{
-								const char* requirement_names[] = { "Enchantment", "Combine", "Refine", "Socket" };
 
-								int current_item = static_cast<int>(targetRequirementInfos[i].m_RequirementType);
-								ImGui::SetNextItemWidth(150);
-								if (ImGui::Combo("Requirement Type", &current_item, requirement_names, IM_ARRAYSIZE(requirement_names)))
+	ImGui::Begin("Editor");
+	//ImGui::ShowDemoWindow();
+
+	std::vector<CombineInfo>& v_CombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
+
+	if (v_CombineInfos.size() == 0) {
+		CombineInfo combineInfo;
+		v_CombineInfos.push_back(combineInfo);
+	}
+	//static std::vector<int32_t> selected;
+	//static std::vector<uint32_t> requirementValues;
+ 
+	static bool show_leading_button = true;  // ? symbol
+	static bool show_trailing_button = true; // + symbol 
+	static ImVector<int32_t> activeSourceCriteriaTabs;
+	static ImVector<int32_t> activeTargetRequirementTabs;
+	static uint32_t nextTargetTabId;
+	static uint32_t nextSourceTabId;
+	static bool combineCriteriaTrailing = true;
+	static bool targetRequirementTrailing = true;
+	static bool sourceCriteriasTrailing = true;
+	static bool requirementTrailing = true;
+
+	static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyResizeDown;
+	tab_bar_flags = ~(ImGuiTabBarFlags_FittingPolicyMask_ ^ ImGuiTabBarFlags_FittingPolicyScroll);
+
+	if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+	{
+		if (show_leading_button)
+			if (ImGui::TabItemButton("?", ImGuiTabItemFlags_Leading | ImGuiTabItemFlags_NoTooltip))
+				ImGui::OpenPopup("MyHelpMenu");
+		if (ImGui::BeginPopup("MyHelpMenu"))
+		{
+			ImGui::Text("1-) Press 'New Combine Info' button to add new combine info.\n2-) Press the symbol left to see all the combine infos you add.\n3-) You can close the tabs when hit 'X' symbol.\nWhen you hit that all the data you have about this tab will be deleted.");
+			ImGui::EndPopup();
+		}
+
+		if (show_trailing_button)
+			if (ImGui::TabItemButton("New Combine Info", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
+				CombineInfo combineInfo;
+				v_CombineInfos.push_back(combineInfo);
+			}
+
+		for (int n = 0; n < v_CombineInfos.size(); )
+		{
+			bool open = true;
+			char name[16];
+			snprintf(name, IM_ARRAYSIZE(name), "%s %d", "Combine Info", n + 1);
+			if (ImGui::BeginTabItem(name, &open, ImGuiTabItemFlags_None))
+			{
+				static ImGuiTabBarFlags tab_bar_flags2 = ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyResizeDown;
+				tab_bar_flags2 = ~(ImGuiTabBarFlags_FittingPolicyMask_ ^ ImGuiTabBarFlags_FittingPolicyScroll);
+
+				ImGui::Text("%s:", name);
+				ImGui::InputScalar("Target Item Id", ImGuiDataType_U32, &v_CombineInfos[n].GetTargetItemIdRef(), NULL, NULL, "%u");
+
+				if (ImGui::BeginTabBar("CombineCriteriasTabBar", tab_bar_flags2)) {
+					
+					if (combineCriteriaTrailing)
+						if (ImGui::TabItemButton("+ Combine Criteria", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
+							CombineCriteria combineCriteria;
+							v_CombineInfos[n].PushCombineCriterias(combineCriteria);
+						}
+
+					
+					for (int32_t i = 0; i < v_CombineInfos[n].GetCombineCriterias().size(); )
+					{
+						bool open2 = true;
+						char name2[30];
+						snprintf(name2, IM_ARRAYSIZE(name2), "%s %d", "Combine Criteria", i + 1);
+
+						if (ImGui::BeginTabItem(name2 , &open2, ImGuiTabItemFlags_None))
+						{
+							ImGui::Text("Combine Criteria %d", i + 1);
+
+							if (ImGui::BeginTabBar("CombCritExtensiveTabBar",tab_bar_flags)) {
+								if (sourceCriteriasTrailing)
+									if (ImGui::TabItemButton("+ Source Criteria",ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip))
+									{
+										SourceCriteria sourceCriteria;
+										v_CombineInfos[n].GetCombineCriteriasRef()[i].PushSourceCriterias(sourceCriteria);
+									}
+								if (targetRequirementTrailing)
+									if (ImGui::TabItemButton("+ Target Requirement", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip))
+									{
+										RequirementInfo targetRequirementInfo;
+										v_CombineInfos[n].GetCombineCriteriasRef()[i].PushTargetRequirementInfo(targetRequirementInfo);
+									}
+
+								for (int32_t k = 0; k < v_CombineInfos[n].GetCombineCriterias()[i].GetSourceCriterias().size(); )
 								{
-									// TODO: Handle case multiple select same instance 
-									targetRequirementInfos[i].m_RequirementType = static_cast<Enum_Requirement>(current_item);
+									bool openSourceCriteria = true;
+									char name3[30];
+									snprintf(name3, IM_ARRAYSIZE(name3), "%s %d", "Source Criteria", k + 1);
+
+									if (ImGui::BeginTabItem(name3, &openSourceCriteria, ImGuiTabItemFlags_None)) {
+										ImGui::EndTabItem();
+									}
+									if (!openSourceCriteria)
+										v_CombineInfos[n].GetCombineCriteriasRef()[i].GetSourceCriteriasRef().erase(v_CombineInfos[n].GetCombineCriteriasRef()[i].GetSourceCriteriasRef().begin() + k);
+									else
+										k++;
 								}
 
-								ImGui::SetNextItemWidth(150);
-								ImGui::InputScalar("Cost", ImGuiDataType_U32, &targetRequirementInfos[i].m_RequirementValue, NULL, NULL, "%u");
-
-
-								ImGuiUtils::ColoredButton(std::string("Delete Requirement Info ") + std::to_string(i), ImVec2(0, 0), ImGuiUtils::imDarkRed, [&]() {
-									targetRequirementInfos.erase(targetRequirementInfos.begin() + i);
-									});
-
-								ImGui::TreePop();
-							}
-						}
-
-						if (targetRequirementInfos.size() < 4) {
-							ImGuiUtils::ColoredButton(std::string("Add Target Requirement Info ") + std::to_string(targetRequirementInfos.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-								RequirementInfo requirementInfo;
-							targetRequirementInfos.push_back(requirementInfo);
-								});
-						}
-						ImGui::TreePop();
-					}
-
-					if (ImGui::TreeNode((std::string("Source Criterias").c_str())))
-					{
-						std::vector<SourceCriteria>& sourceCriterias = combineCriterias[i].GetSourceCriteriasRef();
-						for (int i = 0; i < sourceCriterias.size(); i++)
-						{
-							if (ImGui::TreeNode((std::string("Source Criterias ") + std::to_string(i)).c_str()))
-							{
-								ImGui::SetNextItemWidth(100);
-								ImGui::InputScalar("Source Item Id", ImGuiDataType_U32, &sourceCriterias[i].GetSourceItemIdRef(), NULL, NULL, "%u");
-
-								if (ImGui::TreeNode((std::string("Cost Infos ").c_str())))
+								for (int32_t l = 0; l < v_CombineInfos[n].GetCombineCriterias()[i].GetTargetRequirementInfo().size(); )
 								{
-									std::vector<CostInfo>& costInfos = sourceCriterias[i].GetCostInfosRef();
-									for (int i = 0; i < costInfos.size(); i++)
-									{
-										if (ImGui::TreeNode((std::string("Cost Info ") + std::to_string(i)).c_str()))
-										{
-											const char* cost_names[] = { "Silver" ,"Billion","ContributionPoint","BloodPoint" };
+									RequirementInfo targetRequirementInfo;
+									bool openTargetReq = true;
+									char name3[30];
+									snprintf(name3, IM_ARRAYSIZE(name3), "%s %d", "Target Requirement", l + 1);
 
-											int current_item = static_cast<int>(costInfos[i].m_CostType);
-											ImGui::SetNextItemWidth(180);
-											if (ImGui::Combo("Requirement Type", &current_item, cost_names, IM_ARRAYSIZE(cost_names)))
-											{
-												// TODO: Handle case multiple select same instance 
-												costInfos[i].m_CostType = static_cast<Enum_Cost>(current_item);
+									if (ImGui::BeginTabItem(name3, &openTargetReq, ImGuiTabItemFlags_None)) {
+
+										ImGui::Text("Requirement Type");
+										Enum_Requirement requirementType;
+										if (ImGui::Button("New Requirement Info")) {
+											v_CombineInfos[n].GetCombineCriterias()[i].GetTargetRequirementInfoRef().push_back(targetRequirementInfo);
+										}
+										for (int32_t requirementCounter = 0; requirementCounter < v_CombineInfos[n].GetCombineCriterias()[i].GetTargetRequirementInfoRef().size(); requirementCounter++) {
+											ImGui::Text("Requirement Type:\n");
+											char comboName[30];
+											const char* buffer[4] = { "Enchanment\0" , "Combine\0" , "Refine\0", "Socket\0" };
+											snprintf(comboName, IM_ARRAYSIZE(comboName), "%s %d", "Requirement Type", requirementCounter);
+											int32_t selected = 0;
+											if (ImGui::Combo(comboName, &selected, buffer, IM_ARRAYSIZE(buffer))) {
+												//requirementValues.push_back(0);
+												ImGui::Text("Hello");
 											}
-											ImGui::SetNextItemWidth(100);
-											ImGui::InputScalar("Cost", ImGuiDataType_U32, &costInfos[i].m_CostValue, NULL, NULL, "%u");
+											if(-1 == selected){
+												continue;
+											}
+											else
+												requirementType = static_cast<Enum_Requirement>(selected);
 
-											ImGuiUtils::ColoredButton(std::string("Delete Cost Info ") + std::to_string(i), ImVec2(0, 0), ImGuiUtils::imDarkRed, [&]() {
-												costInfos.erase(costInfos.begin() + i);
-												});
-											ImGui::TreePop();
+											targetRequirementInfo.m_RequirementType = requirementType;
+
+											char reqValue[30];
+											snprintf(reqValue, IM_ARRAYSIZE(reqValue), "%s %d", "Requirement Value", requirementCounter);
+											//ImGui::InputScalar(reqValue, ImGuiDataType_U32, &requirementValues[requirementCounter], NULL, NULL, "%u");
+
+											//targetRequirementInfo.m_RequirementValue = requirementValues[requirementCounter];
+
+											//ImGui::Text("%u", requirementValues[requirementCounter]);
+
+											v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef()[l].m_RequirementType = targetRequirementInfo.m_RequirementType;
+											v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef()[l].m_RequirementValue = targetRequirementInfo.m_RequirementValue;
 										}
 
+										ImGui::EndTabItem();
 									}
-									ImGui::TreePop();
-									if (costInfos.size() < 4)
-									{
-										ImGuiUtils::ColoredButton(std::string("Add Cost Info") + std::to_string(costInfos.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-											CostInfo costInfo;
-										costInfos.push_back(costInfo);
-											});
-									}
+									if (!openTargetReq)
+										v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef().erase(v_CombineInfos[n].GetCombineCriteriasRef()[i].GetTargetRequirementInfoRef().begin() + l);
+									else
+										l++;
 								}
-								ImGui::TreePop();
 
-								
-
+								ImGui::EndTabBar();
 							}
+							ImGui::EndTabItem();
 						}
+						if (!open2)
+							v_CombineInfos[n].GetCombineCriteriasRef().erase(v_CombineInfos[n].GetCombineCriteriasRef().begin() + i);
+						else
+							i++;
+					}	
+					
 
-						ImGuiUtils::ColoredButton(std::string("Add Source Criterias") + std::to_string(sourceCriterias.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-							SourceCriteria sourceCriteria;
-						sourceCriterias.push_back(sourceCriteria);
-							});
-
-						ImGui::TreePop();
-
-					}
-
-
-					ImGuiUtils::ColoredButton(std::string("Delete Combine Criteria ") + std::to_string(i), ImVec2(0, 0), ImGuiUtils::imDarkRed, [&]() {
-						combineCriterias.erase(combineCriterias.begin() + i);
-						});
-
-					ImGui::TreePop();
+					ImGui::EndTabBar();
 				}
-
-
+				ImGui::EndTabItem();
 			}
 
-			if (combineCriterias.size() < 12) {
-				ImGuiUtils::ColoredButton(std::string("Add Combine Criteria ") + std::to_string(combineCriterias.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-					CombineCriteria combineCriteria;
-				combineCriterias.push_back(combineCriteria);
-					});
+			if (!open) {
+				v_CombineInfos.erase(v_CombineInfos.begin() + n);
 			}
-
-			ImGuiUtils::ColoredButton(std::string("Delete Combine Info ") + std::to_string(i), ImVec2(0, 0), ImGuiUtils::imDarkRed, [&]() {
-				combineInfos.erase(combineInfos.begin() + i);
-
-				});
-			// End the tree node
-			ImGui::TreePop();
+			else
+				n++;
 		}
+
+		ImGui::EndTabBar();
 	}
 
 
-	ImGuiUtils::ColoredButton(std::string("Add Combine Info ") + std::to_string(combineInfos.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-		CombineInfo combineInfo;
-	combineInfos.push_back(combineInfo);
-		});
-
-
 	ImGui::End();
-	ImGui::ShowDemoWindow();
 
-	Render();
+	//Render();
 	}

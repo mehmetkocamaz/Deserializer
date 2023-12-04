@@ -19,8 +19,8 @@ namespace EraTools {
 	struct ApplicationSpecification
 	{
 		std::string Name = "Era Tools";
-		uint32_t Width = 1600;
-		uint32_t Height = 900;
+		uint32_t Width = 800;
+		uint32_t Height = 640;
 	};
 
 	class Application

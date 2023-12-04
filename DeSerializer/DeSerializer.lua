@@ -22,7 +22,6 @@ kind "StaticLib"
 
    links
    {
-      "cryptlib.lib",
       "zlib.lib"
    }
 

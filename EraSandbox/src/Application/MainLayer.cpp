@@ -6,6 +6,7 @@ using namespace applicationUtils;
 
 void MainLayer::OnUIRender() 
 {
+	//ImGui::ShowDemoWindow();
 	ImGui::Begin("Editor");
 
 	std::vector<CombineInfo>& v_CombineInfos = CombineInfoRoot::Instance().m_CombineInfos;

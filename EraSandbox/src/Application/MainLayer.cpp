@@ -13,6 +13,7 @@ void MainLayer::OnUIRender()
 
 	if (v_CombineInfos.size() == 0) {
 		CombineInfo combineInfo;
+		combineInfo.GetCombineInfoStatusRef() = true;
 		v_CombineInfos.push_back(combineInfo);
 	}
 
@@ -35,8 +36,19 @@ void MainLayer::OnUIRender()
 		if (show_trailing_button)
 			if (ImGui::TabItemButton("New Combine Info", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
 				CombineInfo combineInfo;
+				combineInfo.GetCombineInfoStatusRef() = true;
 				v_CombineInfos.push_back(combineInfo);
 			}
+
+		if (ImGui::Button("Dark Theme")) {
+			ImGui::StyleColorsDark();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("White Theme")) {
+			ImGui::StyleColorsLight();
+		}
+		ImGui::NewLine();
+
 		for (int32_t combineInfoIterator = 0; combineInfoIterator < v_CombineInfos.size(); )
 		{
 			CombineInfoCreator(v_CombineInfos, combineInfoIterator);

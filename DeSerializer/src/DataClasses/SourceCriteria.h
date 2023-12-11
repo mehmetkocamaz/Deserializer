@@ -65,11 +65,17 @@ public:
 	{
 		return m_ProbabilityInfos;
 	}
+	
+	bool& GetSourceCriteriaStatusRef()
+	{
+		return m_Status;
+	}
 #pragma endregion
 private:
 	uint32_t m_SourceItemId = 0;
 	std::vector<CostInfo> m_CostInfos;
 	std::vector<ProbabilityInfo> m_ProbabilityInfos;
 	std::vector<RequirementInfo> m_SourceRequirementInfos;
+	bool m_Status = false;
 };
 

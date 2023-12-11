@@ -13,8 +13,10 @@ public:
 	std::vector<SourceCriteria>& GetSourceCriteriasRef() { return m_SourceCriterias; }
 	std::vector<RequirementInfo> GetTargetRequirementInfo() const { return m_TargetRequirementInfos; }
 	std::vector<RequirementInfo>& GetTargetRequirementInfoRef() { return m_TargetRequirementInfos; }
+	bool& GetCombineCriteriaStatus() { return m_Status; }
 #pragma endregion
 private:
 	std::vector<RequirementInfo> m_TargetRequirementInfos;
 	std::vector<SourceCriteria> m_SourceCriterias;
+	bool m_Status = false;
 };

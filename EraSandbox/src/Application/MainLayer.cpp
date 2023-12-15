@@ -40,15 +40,6 @@ void MainLayer::OnUIRender()
 				v_CombineInfos.push_back(combineInfo);
 			}
 
-		if (ImGui::Button("Dark Theme")) {
-			ImGui::StyleColorsDark();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("White Theme")) {
-			ImGui::StyleColorsLight();
-		}
-		ImGui::NewLine();
-
 		for (int32_t combineInfoIterator = 0; combineInfoIterator < v_CombineInfos.size(); )
 		{
 			CombineInfoCreator(v_CombineInfos, combineInfoIterator);

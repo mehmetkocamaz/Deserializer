@@ -211,7 +211,6 @@ namespace applicationUtils {
 	void TargetRequirementInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator) {
 		bool isTargetReqOpen = true;
 		char removeTargetRequirementName[16];
-		bool uniqueTargetReq[4] = { false, false, false, false }; // 0 Enchantment, 1 Combine, 2 Refine, 3 Socket
 		if (ImGui::BeginTabItem("TargetRequirements", NULL, ImGuiTabItemFlags_Leading))
 		{
 			ImGui::NewLine();
@@ -223,14 +222,25 @@ namespace applicationUtils {
 			}
 
 			char comboName[30];
-			const char* buffer[4] = { "Enchanment" , "Combine" , "Refine", "Socket" };
+			const char* buffer[5] = { "None" , "Enchanment" , "Combine" , "Refine", "Socket" };
 
 			for (int32_t targetRequirementInfoIterator = 0; targetRequirementInfoIterator < v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef().size();)
 			{
 				ImGui::NewLine();
 				snprintf(comboName, IM_ARRAYSIZE(comboName), "%d %s", targetRequirementInfoIterator + 1, "Requirement Type");
 				snprintf(removeTargetRequirementName, IM_ARRAYSIZE(removeTargetRequirementName), "%s %d", "Remove Index", targetRequirementInfoIterator + 1);
-				if (ImGui::Combo(comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef()[targetRequirementInfoIterator].m_RequirementType, buffer, IM_ARRAYSIZE(buffer))) {}
+				if (ImGui::Combo(comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef()[targetRequirementInfoIterator].m_RequirementType, buffer, IM_ARRAYSIZE(buffer))) 
+				{
+					for(int32_t comboIterator = 0; comboIterator < v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef().size(); comboIterator++)
+					{
+						RequirementInfo& v_RequirementInfo = v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef()[comboIterator];
+						if(v_RequirementInfo.m_RequirementType == v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef()[targetRequirementInfoIterator].m_RequirementType && (comboIterator != targetRequirementInfoIterator))
+						{
+							if (v_RequirementInfo.m_RequirementType != Enum_Requirement::None)
+								v_RequirementInfo.m_RequirementType = Enum_Requirement::None;
+						}
+					}
+				}
 				char requirementValueName[30];
 				snprintf(requirementValueName, IM_ARRAYSIZE(requirementValueName), "%d %s", targetRequirementInfoIterator + 1, "Requirement Value");
 				ImGui::InputScalar(requirementValueName, ImGuiDataType_U32, &v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef()[targetRequirementInfoIterator].m_RequirementValue, NULL, NULL, "%u");
@@ -258,7 +268,7 @@ namespace applicationUtils {
 			ImGui::NewLine();
 			char comboName[30];
 			char removeSourceRequirementName[16];
-			const char* buffer[4] = { "Enchanment" , "Combine" , "Refine", "Socket" };
+			const char* buffer[5] = { "None" , "Enchanment" , "Combine" , "Refine", "Socket" };
 
 			if (ImGui::Button("Add New Requirement Info"))
 			{
@@ -274,7 +284,19 @@ namespace applicationUtils {
 				ImGui::Text("\n");
 				snprintf(comboName, IM_ARRAYSIZE(comboName), "%d %s", sourceRequiremenIterator + 1, "Requirement Type");
 				snprintf(removeSourceRequirementName, IM_ARRAYSIZE(removeSourceRequirementName), "%s %d", "Remove Index", sourceRequiremenIterator + 1);
-				if (ImGui::Combo(comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetSourceRequirementInfosRef()[sourceRequiremenIterator].m_RequirementType, buffer, IM_ARRAYSIZE(buffer))) {}
+				if (ImGui::Combo(comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetSourceRequirementInfosRef()[sourceRequiremenIterator].m_RequirementType, buffer, IM_ARRAYSIZE(buffer))) 
+				{
+					for (int32_t comboIterator = 0; comboIterator < v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef().size(); comboIterator++)
+					{
+						//RequirementInfo& v_RequirementInfo = v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef()[comboIterator];
+						RequirementInfo& v_SourceRequirementInfo = v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef()[comboIterator];
+						if (v_SourceRequirementInfo.m_RequirementType == v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef()[sourceRequiremenIterator].m_RequirementType && (comboIterator != sourceRequiremenIterator))
+						{
+							if (v_SourceRequirementInfo.m_RequirementType != Enum_Requirement::None)
+								v_SourceRequirementInfo.m_RequirementType = Enum_Requirement::None;
+						}
+					}
+				}
 				char requirementValueName[30];
 				snprintf(requirementValueName, IM_ARRAYSIZE(requirementValueName), "%d %s", sourceRequiremenIterator + 1, "Requirement Value");
 				ImGui::InputScalar(requirementValueName, ImGuiDataType_U32, &v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef()[sourceRequiremenIterator].m_RequirementValue, NULL, NULL, "%u");
@@ -315,10 +337,21 @@ namespace applicationUtils {
 			for (int32_t costInfoIterator = 0; costInfoIterator < v_SourceCriterias[sourceCriteriaIterator].GetCostInfos().size();)
 			{
 				char comboName[30];
-				const char* buffer[4] = { "Silver" , "Billion" , "ContributionPoint" , "BloodPoint" };
+				const char* buffer[5] = { "None" , "Silver" , "Billion" , "ContributionPoint" , "BloodPoint" };
 				//snprintf(costInfoName, IM_ARRAYSIZE(costInfoName), "%d %s", costInfoIterator + 1, "Cost Info");
 				snprintf(comboName, IM_ARRAYSIZE(comboName), "%d %s", costInfoIterator + 1, "Cost Type");
-				if (ImGui::Combo(comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetCostInfosRef()[costInfoIterator].m_CostType, buffer, IM_ARRAYSIZE(buffer))) {}
+				if (ImGui::Combo(comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetCostInfosRef()[costInfoIterator].m_CostType, buffer, IM_ARRAYSIZE(buffer))) 
+				{
+					for(int32_t comboIterator = 0; comboIterator < v_SourceCriterias[sourceCriteriaIterator].GetCostInfosRef().size();comboIterator++) 
+					{
+						CostInfo& v_CostInfos = v_SourceCriterias[sourceCriteriaIterator].GetCostInfosRef()[comboIterator];
+						if (v_CostInfos.m_CostType == v_SourceCriterias[sourceCriteriaIterator].GetCostInfosRef()[costInfoIterator].m_CostType && (comboIterator != costInfoIterator))
+						{
+							if (v_CostInfos.m_CostType != Enum_Cost::None)
+								v_CostInfos.m_CostType = Enum_Cost::None;
+						}
+					}
+				}
 				char costValueName[30];
 				snprintf(costValueName, IM_ARRAYSIZE(costValueName), "%d %s", costInfoIterator + 1, "Cost Value");
 				snprintf(removeSourceCostName, IM_ARRAYSIZE(removeSourceCostName), "%s %d", "Remove Index", costInfoIterator + 1);

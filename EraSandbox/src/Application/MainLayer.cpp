@@ -1,158 +1,250 @@
 #include "MainLayer.h"
+#include "CombineInfoRoot.h"
+#include "ImGui/ApplicationUtils.h"
 
-void MainLayer::OnUIRender(){
+using namespace applicationUtils;
+
+void MainLayer::OnUIRender() 
+{
 	ImGui::Begin("Editor");
-	std::vector<CombineInfo>& combineInfos = CombineInfoRoot::Instance().m_CombineInfos;
-	// Iterate over the tree nodes and create a tree node for each element
-	for (int i = 0; i < combineInfos.size(); i++)
-	{
-		// Create a tree node with a dynamic label
-		if (ImGui::TreeNode((std::string("Combine Info ") + std::to_string(i)).c_str()))
-		{
-			// This code will be executed when the tree node is expanded.
-			// Add your tree node content here.
-			ImGui::SetNextItemWidth(100);
-			ImGui::InputScalar("Target Item Id", ImGuiDataType_U32, &combineInfos[i].GetTargetItemIdRef(), NULL, NULL, "%u");
-			std::vector<CombineCriteria>& combineCriterias = combineInfos[i].GetCombineCriteriasRef();
-			for (int i = 0; i < combineCriterias.size(); i++)
-			{
-				if (ImGui::TreeNode((std::string("Combine Criteria ") + std::to_string(i)).c_str()))
-				{
-					if (ImGui::TreeNode((std::string("Target Requirement Infos ").c_str())))
-					{
-						std::vector<RequirementInfo>& targetRequirementInfos = combineCriterias[i].GetTargetRequirementInfoRef();
-						for (int i = 0; i < targetRequirementInfos.size(); i++)
-						{
-							if (ImGui::TreeNode((std::string("Target Requirement Info ") + std::to_string(i)).c_str()))
-							{
-								const char* requirement_names[] = { "Enchantment", "Combine", "Refine", "Socket" };
 
-								int current_item = static_cast<int>(targetRequirementInfos[i].m_RequirementType);
-								ImGui::SetNextItemWidth(150);
-								if (ImGui::Combo("Requirement Type", &current_item, requirement_names, IM_ARRAYSIZE(requirement_names)))
-								{
-									// TODO: Handle case multiple select same instance 
-									targetRequirementInfos[i].m_RequirementType = static_cast<Enum_Requirement>(current_item);
-								}
+	std::vector<CombineInfo>& v_CombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
 
-								ImGui::SetNextItemWidth(150);
-								ImGui::InputScalar("Cost", ImGuiDataType_U32, &targetRequirementInfos[i].m_RequirementValue, NULL, NULL, "%u");
-
-
-								ImGuiUtils::ColoredButton(std::string("Delete Requirement Info ") + std::to_string(i), ImVec2(0, 0), ImGuiUtils::imDarkRed, [&]() {
-									targetRequirementInfos.erase(targetRequirementInfos.begin() + i);
-									});
-
-								ImGui::TreePop();
-							}
-						}
-
-						if (targetRequirementInfos.size() < 4) {
-							ImGuiUtils::ColoredButton(std::string("Add Target Requirement Info ") + std::to_string(targetRequirementInfos.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-								RequirementInfo requirementInfo;
-							targetRequirementInfos.push_back(requirementInfo);
-								});
-						}
-						ImGui::TreePop();
-					}
-
-					if (ImGui::TreeNode((std::string("Source Criterias").c_str())))
-					{
-						std::vector<SourceCriteria>& sourceCriterias = combineCriterias[i].GetSourceCriteriasRef();
-						for (int i = 0; i < sourceCriterias.size(); i++)
-						{
-							if (ImGui::TreeNode((std::string("Source Criterias ") + std::to_string(i)).c_str()))
-							{
-								ImGui::SetNextItemWidth(100);
-								ImGui::InputScalar("Source Item Id", ImGuiDataType_U32, &sourceCriterias[i].GetSourceItemIdRef(), NULL, NULL, "%u");
-
-								if (ImGui::TreeNode((std::string("Cost Infos ").c_str())))
-								{
-									std::vector<CostInfo>& costInfos = sourceCriterias[i].GetCostInfosRef();
-									for (int i = 0; i < costInfos.size(); i++)
-									{
-										if (ImGui::TreeNode((std::string("Cost Info ") + std::to_string(i)).c_str()))
-										{
-											const char* cost_names[] = { "Silver" ,"Billion","ContributionPoint","BloodPoint" };
-
-											int current_item = static_cast<int>(costInfos[i].m_CostType);
-											ImGui::SetNextItemWidth(180);
-											if (ImGui::Combo("Requirement Type", &current_item, cost_names, IM_ARRAYSIZE(cost_names)))
-											{
-												// TODO: Handle case multiple select same instance 
-												costInfos[i].m_CostType = static_cast<Enum_Cost>(current_item);
-											}
-											ImGui::SetNextItemWidth(100);
-											ImGui::InputScalar("Cost", ImGuiDataType_U32, &costInfos[i].m_CostValue, NULL, NULL, "%u");
-
-											ImGuiUtils::ColoredButton(std::string("Delete Cost Info ") + std::to_string(i), ImVec2(0, 0), ImGuiUtils::imDarkRed, [&]() {
-												costInfos.erase(costInfos.begin() + i);
-												});
-											ImGui::TreePop();
-										}
-
-									}
-									ImGui::TreePop();
-									if (costInfos.size() < 4)
-									{
-										ImGuiUtils::ColoredButton(std::string("Add Cost Info") + std::to_string(costInfos.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-											CostInfo costInfo;
-										costInfos.push_back(costInfo);
-											});
-									}
-								}
-								ImGui::TreePop();
-
-								
-
-							}
-						}
-
-						ImGuiUtils::ColoredButton(std::string("Add Source Criterias") + std::to_string(sourceCriterias.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-							SourceCriteria sourceCriteria;
-						sourceCriterias.push_back(sourceCriteria);
-							});
-
-						ImGui::TreePop();
-
-					}
-
-
-					ImGuiUtils::ColoredButton(std::string("Delete Combine Criteria ") + std::to_string(i), ImVec2(0, 0), ImGuiUtils::imDarkRed, [&]() {
-						combineCriterias.erase(combineCriterias.begin() + i);
-						});
-
-					ImGui::TreePop();
-				}
-
-
-			}
-
-			if (combineCriterias.size() < 12) {
-				ImGuiUtils::ColoredButton(std::string("Add Combine Criteria ") + std::to_string(combineCriterias.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
-					CombineCriteria combineCriteria;
-				combineCriterias.push_back(combineCriteria);
-					});
-			}
-
-			ImGuiUtils::ColoredButton(std::string("Delete Combine Info ") + std::to_string(i), ImVec2(0, 0), ImGuiUtils::imDarkRed, [&]() {
-				combineInfos.erase(combineInfos.begin() + i);
-
-				});
-			// End the tree node
-			ImGui::TreePop();
-		}
-	}
-
-
-	ImGuiUtils::ColoredButton(std::string("Add Combine Info ") + std::to_string(combineInfos.size()), ImVec2(0, 0), ImGuiUtils::imDarkGreen, [&]() {
+	if (v_CombineInfos.size() == 0) {
 		CombineInfo combineInfo;
-	combineInfos.push_back(combineInfo);
-		});
-
-
-	ImGui::End();
-	ImGui::ShowDemoWindow();
-
-	Render();
+		combineInfo.GetCombineInfoStatusRef() = true;
+		v_CombineInfos.push_back(combineInfo);
 	}
+
+	static bool show_leading_button = true;  // ? symbol
+	static bool show_trailing_button = true; // + symbol 
+	static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyResizeDown;
+	tab_bar_flags = ~(ImGuiTabBarFlags_FittingPolicyMask_ ^ ImGuiTabBarFlags_FittingPolicyScroll);
+
+	if (ImGui::BeginTabBar("CombineInfoTabBar", tab_bar_flags))
+	{
+		if (show_leading_button)
+			if (ImGui::TabItemButton("?", ImGuiTabItemFlags_Leading | ImGuiTabItemFlags_NoTooltip))
+				ImGui::OpenPopup("HelpMenu");
+		if (ImGui::BeginPopup("HelpMenu"))
+		{
+			ImGui::Text("1-) Press 'New Combine Info' button to add new combine info.\n2-) Press the symbol left to see all the combine infos you add.\n3-) You can close the tabs when hit 'X' symbol.\nWhen you hit that all the data you have about this tab will be deleted.");
+			ImGui::EndPopup();
+		}
+
+		if (show_trailing_button)
+			if (ImGui::TabItemButton("New Combine Info", ImGuiTabItemFlags_Trailing | ImGuiTabItemFlags_NoTooltip)) {
+				CombineInfo combineInfo;
+				combineInfo.GetCombineInfoStatusRef() = true;
+				v_CombineInfos.push_back(combineInfo);
+			}
+
+		for (int32_t combineInfoIterator = 0; combineInfoIterator < v_CombineInfos.size(); )
+		{
+			CombineInfoCreator(v_CombineInfos, combineInfoIterator);
+		}
+		ImGui::EndTabBar;
+	}
+	ImGui::End();
+
+
+	// ***************************************************************************************
+
+
+	//ImGui::Begin("Showcase");
+	//ImGuiTableFlags table_flags = (ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable);
+	//int32_t openedCombineInfoIndex = 0;
+	//if (ImGui::BeginTable("CombineInfoTable", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable))
+	//{
+	//	//std::format("Combine Info {0}", (openedCombineInfoIndex + 1).c_str()); // when you want to do format just use it :P
+	//	char buffer[30];
+	//	snprintf(buffer, IM_ARRAYSIZE(buffer), "%s %d", "Combine Info", (openedCombineInfoIndex + 1));
+	//	ImGui::TableSetupColumn(buffer);
+	//	ImGui::TableHeadersRow();
+
+	//	ImGui::TableNextColumn();
+	//	ImGui::Text("Target Item Id : %d", v_CombineInfos[openedCombineInfoIndex].GetTargetItemId());
+
+	//	for(int32_t criteriaIterator = 0; criteriaIterator < v_CombineInfos[openedCombineInfoIndex].GetCombineCriteriasRef().size(); criteriaIterator++)
+	//	{
+	//		char buffer[30];
+	//		snprintf(buffer, IM_ARRAYSIZE(buffer), "%s %d", "Combine Criteria", (criteriaIterator + 1));
+
+	//		if (ImGui::BeginTable("CombineCriteriaTable", 1, ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable))
+	//		{
+	//			ImGui::TableSetupColumn(buffer);
+	//			ImGui::TableHeadersRow();
+
+	//			ImGui::TableNextColumn();
+	//			ImGui::Text("Target Requirement Size : %d", v_CombineInfos[openedCombineInfoIndex].GetCombineCriteriasRef()[criteriaIterator].GetTargetRequirementInfoRef().size());
+	//			ImGui::Text("Source Criteria Size : %d", v_CombineInfos[openedCombineInfoIndex].GetCombineCriteriasRef()[criteriaIterator].GetSourceCriteriasRef().size());
+	//			
+	//			if (ImGui::BeginTable("TargetRequirementTable", 2, table_flags))
+	//			{
+	//				ImGui::TableSetupColumn("Target Requirement Type");
+	//				ImGui::TableSetupColumn("Target Requirement Value");
+	//				ImGui::TableHeadersRow();
+	//				for (int32_t targetRequirementIterator = 0; targetRequirementIterator < v_CombineInfos[openedCombineInfoIndex].GetCombineCriteriasRef()[criteriaIterator].GetTargetRequirementInfoRef().size(); targetRequirementIterator++)
+	//				{
+	//					ImGui::TableNextRow(ImGuiTableFlags_None);
+	//					ImGui::TableNextColumn();
+	//					switch (v_CombineInfos[openedCombineInfoIndex].GetCombineCriteriasRef()[criteriaIterator].GetTargetRequirementInfoRef()[targetRequirementIterator].m_RequirementType)
+	//					{
+	//					case Enum_Requirement::None:
+	//						ImGui::Text("None");
+	//						break;
+	//					case Enum_Requirement::Enchanment:
+	//						ImGui::Text("Enchanment");
+	//						break;
+	//					case Enum_Requirement::Combine:
+	//						ImGui::Text("Combine");
+	//						break;
+	//					case Enum_Requirement::Refine:
+	//						ImGui::Text("Refine");
+	//						break;
+	//					case Enum_Requirement::Socket:
+	//						ImGui::Text("Socket");
+	//						break;
+	//					default:
+	//						ImGui::Text("Invalid Choise");
+	//						break;
+	//					}
+	//					ImGui::TableNextColumn();
+	//					ImGui::Text("%d", v_CombineInfos[openedCombineInfoIndex].GetCombineCriteriasRef()[criteriaIterator].GetTargetRequirementInfoRef()[targetRequirementIterator].m_RequirementValue);
+	//				}
+	//				ImGui::EndTable();
+	//			}
+	//			std::vector<SourceCriteria>& v_SourceCriterias = v_CombineInfos[openedCombineInfoIndex].GetCombineCriteriasRef()[criteriaIterator].GetSourceCriteriasRef();
+	//			
+	//			for(int32_t sourceCriteriaIterator = 0; sourceCriteriaIterator < v_SourceCriterias.size(); sourceCriteriaIterator++)
+	//			{
+	//				char buffer[30];
+	//				snprintf(buffer, IM_ARRAYSIZE(buffer), "%s %d", "Source Criteria", (sourceCriteriaIterator + 1));
+	//				if (ImGui::BeginTable(buffer, 1, table_flags))
+	//				{
+	//					ImGui::TableSetupColumn(buffer);
+	//					ImGui::TableHeadersRow();
+	//					ImGui::TableNextColumn();
+	//					ImGui::Text("Source Item Id : %d", v_SourceCriterias[sourceCriteriaIterator].GetSourceItemId());
+	//					if(v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef().size() != 0)
+	//						if (ImGui::BeginTable("SourceRequirementTable", 2, table_flags))
+	//						{
+	//							ImGui::TableSetupColumn("Source Requirement Type");
+	//							ImGui::TableSetupColumn("Source Requirement Value");
+	//							ImGui::TableHeadersRow();
+
+	//							for (int32_t sourceRequirementIterator = 0; sourceRequirementIterator < v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef().size(); sourceRequirementIterator++)
+	//							{
+	//								ImGui::TableNextRow(ImGuiTableFlags_None);
+	//								ImGui::TableNextColumn();
+	//								switch (v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef()[sourceRequirementIterator].m_RequirementType)
+	//								{
+	//								case Enum_Requirement::None:
+	//									ImGui::Text("None");
+	//									break;
+	//								case Enum_Requirement::Enchanment:
+	//									ImGui::Text("Enchanment");
+	//									break;
+	//								case Enum_Requirement::Combine:
+	//									ImGui::Text("Combine");
+	//									break;
+	//								case Enum_Requirement::Refine:
+	//									ImGui::Text("Refine");
+	//									break;
+	//								case Enum_Requirement::Socket:
+	//									ImGui::Text("Socket");
+	//									break;
+	//								default:
+	//									ImGui::Text("Invalid Choise");
+	//									break;
+	//								}
+	//								ImGui::TableNextColumn();
+	//								ImGui::Text("%d", v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef()[sourceRequirementIterator].m_RequirementValue);
+	//							}
+	//							ImGui::EndTable();
+	//						}
+
+	//					if (v_SourceCriterias[sourceCriteriaIterator].GetCostInfosRef().size() != 0)
+	//						if (ImGui::BeginTable("SourceCostTable", 2, table_flags))
+	//						{
+	//							ImGui::TableSetupColumn("Source Cost Type");
+	//							ImGui::TableSetupColumn("Source Cost Value");
+	//							ImGui::TableHeadersRow();
+	//							for (int32_t sourceCostIterator = 0; sourceCostIterator < v_SourceCriterias[sourceCriteriaIterator].GetCostInfosRef().size(); sourceCostIterator++)
+	//							{
+	//								ImGui::TableNextRow(ImGuiTableFlags_None);
+	//								ImGui::TableNextColumn();
+	//								switch (v_SourceCriterias[sourceCriteriaIterator].GetCostInfosRef()[sourceCostIterator].m_CostType)
+	//								{
+	//								case Enum_Cost::None:
+	//									ImGui::Text("None");
+	//									break;
+	//								case Enum_Cost::Billion:
+	//									ImGui::Text("Billion");
+	//									break;
+	//								case Enum_Cost::BloodPoint:
+	//									ImGui::Text("BloodPoint");
+	//									break;
+	//								case Enum_Cost::ContributionPoint:
+	//									ImGui::Text("ContributionPoint");
+	//									break;
+	//								case Enum_Cost::Silver:
+	//									ImGui::Text("Silver");
+	//									break;
+	//								default:
+	//									ImGui::Text("Invalid Choise");
+	//									break;
+	//								}
+	//								ImGui::TableNextColumn();
+	//								ImGui::Text("%d", v_SourceCriterias[sourceCriteriaIterator].GetCostInfosRef()[sourceCostIterator].m_CostValue);
+	//							}
+	//							ImGui::EndTable();
+	//						}
+
+	//					if (v_SourceCriterias[sourceCriteriaIterator].GetProbabilityInfosRef().size() != 0)
+	//						if (ImGui::BeginTable("SourceProbabilityInfo", 2, table_flags))
+	//						{
+	//							ImGui::TableSetupColumn("Source Probability Type");
+	//							ImGui::TableSetupColumn("Source Probability Value");
+	//							ImGui::TableHeadersRow();
+	//							for (int32_t sourceProbabilityIterator = 0; sourceProbabilityIterator < v_SourceCriterias[criteriaIterator].GetProbabilityInfosRef().size(); sourceProbabilityIterator++)
+	//							{
+	//								ImGui::TableNextRow(ImGuiTableFlags_None);
+	//								ImGui::TableNextColumn();
+	//								switch (v_SourceCriterias[sourceCriteriaIterator].GetProbabilityInfosRef()[sourceProbabilityIterator].m_ProbabilityType)
+	//								{
+	//								case Enum_Probability::Success:
+	//									ImGui::Text("Success");
+	//									break;
+	//								case Enum_Probability::Fail:
+	//									ImGui::Text("Fail");
+	//									break;
+	//								case Enum_Probability::Break:
+	//									ImGui::Text("Break");
+	//									break;
+	//								default:
+	//									ImGui::Text("Invalid Choise");
+	//									break;
+	//								}
+	//								ImGui::TableNextColumn();
+	//								ImGui::Text("%d", v_SourceCriterias[sourceCriteriaIterator].GetProbabilityInfosRef()[sourceProbabilityIterator].m_ProbabilityValue);
+	//							}
+	//							ImGui::EndTable();
+	//						}
+	//					ImGui::EndTable();
+	//				}
+	//			}
+	//			ImGui::EndTable();
+	//		}
+	//	}
+	//	ImGui::EndTable();
+	//}
+	//ImGui::End();
+
+
+	// ***************************************************************************************
+
+	//ImGui::ShowDemoWindow();
+	//Render();
+
+}

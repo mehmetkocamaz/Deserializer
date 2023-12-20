@@ -10,15 +10,19 @@ kind "StaticLib"
    includedirs
    {
       "src",
-      "vendor/json"
+      "vendor/json",
+      "vendor/zlib-1.2.11/include",
+      "vendor/cryptopp890"
    }
 
    libdirs{
-
+      "vendor/zlib-1.2.11/lib",
+      "vendor/cryptopp890/lib/Debug"
 	}
 
    links
    {
+      "zlib.lib"
    }
 
    targetdir ("bin/" .. outputdir .. "/%{prj.name}")

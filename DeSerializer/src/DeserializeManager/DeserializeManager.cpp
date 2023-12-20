@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <bitset>
+#include "Utils/Utils.h"
 
 using json = nlohmann::json;
 
@@ -24,7 +25,7 @@ Enum_DeserializationStatus DeserializerManager::Deserialize()
 }
 
 Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
-	std::ifstream file(m_DeserializeSpecification.m_FilePath);
+	std::ifstream file(m_DeserializeSpecification.m_SaveOptions.m_FilePath);
 	if (!file.is_open()) {
 		std::cerr << "The json file cannot opened." << std::endl;
 		return Enum_DeserializationStatus::OPEN_FILE_ERROR;
@@ -63,7 +64,7 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 						CostInfo costObj;
 						costObj.m_CostType = static_cast<Enum_Cost>(costType);
 						costObj.m_CostValue = costValue;
-						sourceCriteriaClass.PushCostInfo(costObj);
+						sourceCriteriaClass.SetCostInfo(costObj);
 					}
 					for (const json& probabilityInfos : sourceCriterias["ProbabilityInfos"]) {
 
@@ -73,6 +74,7 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 
 						probabilityObj.m_ProbabilityType = static_cast<Enum_Probability>(probabilityType);
 						probabilityObj.m_ProbabilityValue = probabilityValue;
+						sourceCriteriaClass.SetProbabilityInfo(probabilityObj);
 					}
 					for (const json& sourceRequirementInfos : sourceCriterias["SourceRequirementInfos"])
 					{
@@ -82,7 +84,7 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 						RequirementInfo reqObj;
 						reqObj.m_RequirementType = static_cast<Enum_Requirement>(requirementType);
 						reqObj.m_RequirementValue = requirementValue;
-						sourceCriteriaClass.PushSourceRequirementInfo(reqObj);
+						sourceCriteriaClass.SetSourceRequirementInfo(reqObj);
 					}
 					combineCriteriaClass.PushSourceCriterias(sourceCriteriaClass);
 				}
@@ -102,80 +104,85 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 
 Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 {
-	
-	std::ifstream readData(m_DeserializeSpecification.m_FilePath, std::ios::binary);
-	if (!readData.is_open())
+	std::vector<uint8_t> buffer = Utils::ReadBytesToVector(m_DeserializeSpecification.m_SaveOptions.m_FilePath);
+	std::vector<uint8_t> decompressedDataBuffer;
+	uint32_t decompressedBufferSize = 0;
+	size_t offset = 0;
+	if (buffer.size() > 4)
 	{
-		std::cerr << "data.bin cannot opened!!" << std::endl;
-		return Enum_DeserializationStatus::OPEN_FILE_ERROR;
+		Utils::ReadFromBuffer(buffer, decompressedBufferSize, offset);
+		buffer.erase(buffer.begin(), buffer.begin() + 4);
 	}
-	try
+
 	{
-		std::vector<std::bitset<32>> binaryData;
-		while (!readData.eof()) {
-			std::bitset<32> temp;
-			readData.read(reinterpret_cast<char*>(&temp), sizeof(temp));
-			binaryData.push_back(temp);
+		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_XorFilter)
+			Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_XorKey);
+
+		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
+		{
+			decompressedDataBuffer.resize(decompressedBufferSize);
+			Utils::Decompress(buffer, decompressedDataBuffer);
 		}
-		readData.close();
+		else
+		{
+			decompressedDataBuffer = buffer;
+		}
+	}
 
-		std::vector<uint32_t> totalBytesRead;
-		uint32_t combineInfoSize = binaryData[0].to_ulong();
-
-		for (int32_t i = 0; i < combineInfoSize; i++) {
+	{
+		offset = 0;
+		uint32_t combineInfoSize = 0;
+		Utils::ReadFromBuffer(decompressedDataBuffer,combineInfoSize,offset);
+		for (;offset < decompressedDataBuffer.size();)
+		{
 			CombineInfo combineInfo;
-			uint32_t previousOffset = i == 0 ? 0 : totalBytesRead[i - 1];
-			
-			totalBytesRead.push_back(0);
-			uint32_t offset = 1 + previousOffset;
-			ReadUint32_t(binaryData, combineInfo.GetTargetItemIdRef(), offset, previousOffset);
-
+			Utils::ReadFromBuffer(decompressedDataBuffer, combineInfo.GetTargetItemIdRef(), offset);
 			uint32_t combineCriteriaSize;
-			ReadUint32_t(binaryData, combineCriteriaSize, offset, previousOffset);
+			Utils::ReadFromBuffer(decompressedDataBuffer, combineCriteriaSize, offset);
 			for (int32_t j = 0; j < combineCriteriaSize; j++)
 			{
 				CombineCriteria combineCriteria;
 				uint32_t targetRequirementInfoSize;
-				
-				ReadUint32_t(binaryData, targetRequirementInfoSize, offset, previousOffset);
+
+				Utils::ReadFromBuffer(decompressedDataBuffer, targetRequirementInfoSize, offset);
 				for (int32_t k = 0; k < targetRequirementInfoSize; k++)
 				{
 					RequirementInfo requirementInfo;
-					ReadEnum_Requirement(binaryData, requirementInfo.GetRequirementTypeRef(), offset, previousOffset);
-					ReadUint32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
+					Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementTypeRef(), offset);
+					Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementValueRef(), offset);
 					combineCriteria.PushTargetRequirementInfo(requirementInfo);
 				}
 				uint32_t sourceCriteriaSize;
-				ReadUint32_t(binaryData, sourceCriteriaSize, offset, previousOffset);
+				Utils::ReadFromBuffer(decompressedDataBuffer, sourceCriteriaSize, offset);
 				for (int32_t k = 0; k < sourceCriteriaSize; k++) {
 					SourceCriteria sourceCriteria;
-					ReadUint32_t(binaryData, sourceCriteria.GetSourceItemIdRef(), offset, previousOffset);
-					
-					int32_t costInfoSize;
-					ReadInt32_t(binaryData, costInfoSize, offset, previousOffset);
+					Utils::ReadFromBuffer(decompressedDataBuffer, sourceCriteria.GetSourceItemIdRef(), offset);
+
+					uint32_t costInfoSize;
+					Utils::ReadFromBuffer(decompressedDataBuffer, costInfoSize, offset);
 					for (int32_t m = 0; m < costInfoSize; m++) {
 						CostInfo costInfo;
-						ReadEnum_Cost(binaryData, costInfo.GetCostTypeRef(), offset, previousOffset);
-						ReadUint32_t(binaryData, costInfo.GetCostValueRef(), offset, previousOffset);
-						sourceCriteria.PushCostInfo(costInfo);
+						Utils::ReadFromBuffer(decompressedDataBuffer, costInfo.GetCostTypeRef(), offset);
+						Utils::ReadFromBuffer(decompressedDataBuffer, costInfo.GetCostValueRef(), offset);
+						sourceCriteria.SetCostInfo(costInfo);
 					}
 
-					int32_t probabilityInfoSize;
-					ReadInt32_t(binaryData, probabilityInfoSize, offset, previousOffset);
+					uint32_t probabilityInfoSize;
+					Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfoSize, offset);
 					for (int32_t m = 0; m < probabilityInfoSize; m++) {
 						ProbabilityInfo probabilityInfo;
-						ReadEnum_Probability(binaryData, probabilityInfo.GetProbabiltyTypeRef(), offset, previousOffset);
-						ReadUint32_t(binaryData, probabilityInfo.GetProbabilityValueRef(), offset, previousOffset);
-						sourceCriteria.PushProbabilityInfo(probabilityInfo);
+						Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfo.GetProbabiltyTypeRef(), offset);
+						Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfo.GetProbabilityValueRef(), offset);
+						sourceCriteria.SetProbabilityInfo(probabilityInfo);
 					}
 
-					int32_t requirementInfoSize;
-					ReadInt32_t(binaryData, requirementInfoSize, offset, previousOffset);
+					uint32_t requirementInfoSize;
+					Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfoSize, offset);
 					for (int32_t m = 0; m < requirementInfoSize; m++) {
 						RequirementInfo requirementInfo;
-						ReadEnum_Requirement(binaryData, requirementInfo.GetRequirementTypeRef(), offset, previousOffset);
-						ReadUint32_t(binaryData, requirementInfo.GetRequirementValueRef(), offset, previousOffset);
-						sourceCriteria.PushSourceRequirementInfo(requirementInfo);
+						Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementTypeRef(), offset);
+						Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementValueRef(), offset);
+						sourceCriteria.SetSourceRequirementInfo(requirementInfo);
 					}
 					combineCriteria.PushSourceCriterias(sourceCriteria);
 				}
@@ -183,13 +190,8 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 			}
 			m_CombineInfos.push_back(combineInfo);
 		}
+	}
 
-	}
-	catch (const std::exception&)
-	{
-		return Enum_DeserializationStatus::FAIL;
-	}
-	
 	return Enum_DeserializationStatus::SUCCESS;
 }
 
@@ -239,78 +241,79 @@ void DeserializerManager::DisplayScreen() const {
 	}
 }
 
-void DeserializerManager::ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
-	
-	destination = static_cast<uint32_t>(buffer[offset++].to_ulong());
-	previousOffset++;
-}
-void DeserializerManager::ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
-	destination = static_cast<int32_t>(buffer[offset++].to_ulong());
-	previousOffset++;
-}
-void DeserializerManager::ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destination, uint32_t& offset, uint32_t& previousOffset) {
-	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
-	switch (temp)
-	{
-	case 0:
-		destination = Enum_Cost::Silver;
-		break;
-	case 1:
-		destination = Enum_Cost::Billion;
-		break;
-	case 2:
-		destination = Enum_Cost::ContributionPoint;
-		break;
-	case 3:
-		destination = Enum_Cost::BloodPoint;
-		break;
-	default:
-		std::cerr << "There is an error about deserializing binary data.";
-		break;
-	}
-	previousOffset++;
-}
 
-void DeserializerManager::ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requirement& destination, uint32_t& offset, uint32_t& previousOffset) {
-	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
-	switch (temp)
-	{
-	case 0:
-		destination = Enum_Requirement::Enchanment;
-		break;
-	case 1:
-		destination = Enum_Requirement::Combine;
-		break;
-	case 2:
-		destination = Enum_Requirement::Refine;
-		break;
-	case 3:
-		destination = Enum_Requirement::Socket;
-		break;
-	default:
-		std::cerr << "There is an error about deserializing binary data.";
-		break;
-	}
-	previousOffset++;
-}
-
-void DeserializerManager::ReadEnum_Probability(const std::vector<std::bitset<32>>& buffer, Enum_Probability& destination, uint32_t& offset, uint32_t& previousOffset) {
-	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
-	switch (temp)
-	{
-	case 0:
-		destination = Enum_Probability::Success;
-		break;
-	case 1:
-		destination = Enum_Probability::Fail;
-		break;
-	case 2:
-		destination = Enum_Probability::Break;
-		break;
-	default:
-		std::cerr << "There is an error about deserializing binary data.";
-		break;
-	}
-	previousOffset++;
-}
+//void DeserializerManager::ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
+//	
+//	destination = static_cast<uint32_t>(buffer[offset++].to_ulong());
+//	previousOffset++;
+//}
+//void DeserializerManager::ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
+//	destination = static_cast<int32_t>(buffer[offset++].to_ulong());
+//	previousOffset++;
+//}
+//void DeserializerManager::ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destination, uint32_t& offset, uint32_t& previousOffset) {
+//	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
+//	switch (temp)
+//	{
+//	case 0:
+//		destination = Enum_Cost::Silver;
+//		break;
+//	case 1:
+//		destination = Enum_Cost::Billion;
+//		break;
+//	case 2:
+//		destination = Enum_Cost::ContributionPoint;
+//		break;
+//	case 3:
+//		destination = Enum_Cost::BloodPoint;
+//		break;
+//	default:
+//		std::cerr << "There is an error about deserializing binary data.";
+//		break;
+//	}
+//	previousOffset++;
+//}
+//
+//void DeserializerManager::ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requirement& destination, uint32_t& offset, uint32_t& previousOffset) {
+//	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
+//	switch (temp)
+//	{
+//	case 0:
+//		destination = Enum_Requirement::Enchanment;
+//		break;
+//	case 1:
+//		destination = Enum_Requirement::Combine;
+//		break;
+//	case 2:
+//		destination = Enum_Requirement::Refine;
+//		break;
+//	case 3:
+//		destination = Enum_Requirement::Socket;
+//		break;
+//	default:
+//		std::cerr << "There is an error about deserializing binary data.";
+//		break;
+//	}
+//	previousOffset++;
+//}
+//
+//void DeserializerManager::ReadEnum_Probability(const std::vector<std::bitset<32>>& buffer, Enum_Probability& destination, uint32_t& offset, uint32_t& previousOffset) {
+//	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
+//	switch (temp)
+//	{
+//	case 0:
+//		destination = Enum_Probability::Success;
+//		break;
+//	case 1:
+//		destination = Enum_Probability::Fail;
+//		break;
+//	case 2:
+//		destination = Enum_Probability::Break;
+//		break;
+//	default:
+//		std::cerr << "There is an error about deserializing binary data.";
+//		break;
+//	}
+//	previousOffset++;
+//}
 

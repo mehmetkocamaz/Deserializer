@@ -9,7 +9,6 @@ enum class Enum_SerizalizeContentType
 
 struct SerializeSpec
 {
-	Enum_SerizalizeContentType m_FileType;
-	std::filesystem::path m_FilePath;
+	Enum_SerizalizeContentType m_ContentType;
 	const std::vector<CombineInfo>* m_CombineInfos;
 };

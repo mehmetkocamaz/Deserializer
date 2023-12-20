@@ -2,7 +2,8 @@
 #include <cstdint>
 enum class Enum_Requirement
 {
-	Enchanment = 0,
+	None = 0,
+	Enchanment,
 	Combine,
 	Refine,
 	Socket
@@ -10,7 +11,8 @@ enum class Enum_Requirement
 
 enum class Enum_Cost
 {
-	Silver = 0,
+	None = 0,
+	Silver,
 	Billion,
 	ContributionPoint,
 	BloodPoint
@@ -26,7 +28,7 @@ enum class Enum_Probability
 struct CostInfo
 {
 
-	Enum_Cost m_CostType = Enum_Cost::Silver;
+	Enum_Cost m_CostType = Enum_Cost::None;
 	uint32_t m_CostValue = 0;
 #pragma region Getters
 	Enum_Cost& GetCostTypeRef() { return m_CostType; }
@@ -36,7 +38,7 @@ struct CostInfo
 
 struct RequirementInfo
 {
-	Enum_Requirement m_RequirementType = Enum_Requirement::Enchanment;
+	Enum_Requirement m_RequirementType = Enum_Requirement::None;
 	uint32_t m_RequirementValue = 0;
 #pragma region Getters
 	Enum_Requirement& GetRequirementTypeRef() { return m_RequirementType; }

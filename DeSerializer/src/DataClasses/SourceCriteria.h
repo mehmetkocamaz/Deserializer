@@ -10,19 +10,20 @@ public:
 		m_SourceItemId = sourceItemId;
 	}
 
-	void PushCostInfo(const CostInfo& costInfo)
+	void SetCostInfo(const CostInfo& costInfo)
 	{
 		m_CostInfos.push_back(costInfo);
 	}
 
-	void PushSourceRequirementInfo(const RequirementInfo& requirementInfo)
+	void SetSourceRequirementInfo(const RequirementInfo& requirementInfo)
 	{
 		m_SourceRequirementInfos.push_back(requirementInfo);
 	}
-	void PushProbabilityInfo(const ProbabilityInfo& probabilityInfo)
+	void SetProbabilityInfo(const ProbabilityInfo& probabilityInfo)
 	{
 		m_ProbabilityInfos.push_back(probabilityInfo);
 	}
+
 #pragma endregion 
 #pragma region Getters
 	uint32_t GetSourceItemId() const
@@ -64,11 +65,17 @@ public:
 	{
 		return m_ProbabilityInfos;
 	}
+	
+	bool& GetSourceCriteriaStatusRef()
+	{
+		return m_Status;
+	}
 #pragma endregion
 private:
 	uint32_t m_SourceItemId = 0;
 	std::vector<CostInfo> m_CostInfos;
 	std::vector<ProbabilityInfo> m_ProbabilityInfos;
 	std::vector<RequirementInfo> m_SourceRequirementInfos;
+	bool m_Status = false;
 };
 

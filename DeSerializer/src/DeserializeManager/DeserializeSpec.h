@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include "Options/SaveOptions.h"
 
 enum class Enum_DeserializeContentType
 {
@@ -10,5 +11,5 @@ enum class Enum_DeserializeContentType
 struct DeserializeSpec
 {
 	Enum_DeserializeContentType m_FileType;
-	std::filesystem::path m_FilePath;
+	SaveOptions m_SaveOptions;
 };

@@ -2,8 +2,11 @@
 #include "imgui.h"
 #include "Application/CombineInfoRoot.h"
 #include <format>
+#include "SerializeManager/SerializeManager.h"
+#include <Windows.h>
 
 namespace applicationUtils {
+	static int32_t saveProcess = 0;
 	static int32_t combineInfoDisplayIterator = 0;
 	static bool combineCriteriaTrailing = true;
 	static bool sourceCriteriasTrailing = true;
@@ -21,7 +24,8 @@ namespace applicationUtils {
 	void SourceCostInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void SourceProbabilityInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void ShowcaseInit(std::vector<CombineInfo>& v_CombineInfos, int32_t openedCombineInfoIndex);
-
+	void SaveFileWindowsDialog(const char* filter, char* outPath, int bufferSize);
+	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning);
 	
 	void CombineInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator) {
 		bool isCombineInfoOpen = true;
@@ -87,7 +91,6 @@ namespace applicationUtils {
 	}
 	
 	void CombineCriteriaCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator) {
-		//static ImGuiTabBarFlags tab_bar_flags2 = ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_TabListPopupButton | ImGuiTabBarFlags_FittingPolicyScroll;
 		static ImGuiTabBarFlags tab_bar_flags2 = /*ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_Reorderable |*/ ImGuiTabBarFlags_TabListPopupButton | ImGuiTabBarFlags_FittingPolicyScroll;
 
 		for (int32_t combineCriteriaIterator = 0; combineCriteriaIterator < v_CombineInfo[combineInfoIterator].GetCombineCriterias().size(); ) {
@@ -234,7 +237,7 @@ namespace applicationUtils {
 			}
 
 			char comboName[30];
-			const char* buffer[5] = { "None" , "Enchanment" , "Combine" , "Refine", "Socket" };
+			const char* buffer[5] = { "Enchanment" , "Combine" , "Refine", "Socket" , "None" };
 
 			for (int32_t targetRequirementInfoIterator = 0; targetRequirementInfoIterator < v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef().size();)
 			{
@@ -280,7 +283,7 @@ namespace applicationUtils {
 			ImGui::NewLine();
 			char comboName[30];
 			char removeSourceRequirementName[16];
-			const char* buffer[5] = { "None" , "Enchanment" , "Combine" , "Refine", "Socket" };
+			const char* buffer[5] = { "Enchanment" , "Combine" , "Refine", "Socket", "None" };
 
 			if (ImGui::Button("Add New Requirement Info"))
 			{
@@ -349,7 +352,7 @@ namespace applicationUtils {
 			for (int32_t costInfoIterator = 0; costInfoIterator < v_SourceCriterias[sourceCriteriaIterator].GetCostInfos().size();)
 			{
 				char comboName[30];
-				const char* buffer[5] = { "None" , "Silver" , "Billion" , "ContributionPoint" , "BloodPoint" };
+				const char* buffer[5] = { "Silver" , "Billion" , "ContributionPoint" , "BloodPoint" , "None" };
 				//snprintf(costInfoName, IM_ARRAYSIZE(costInfoName), "%d %s", costInfoIterator + 1, "Cost Info");
 				snprintf(comboName, IM_ARRAYSIZE(comboName), "%d %s", costInfoIterator + 1, "Cost Type");
 				if (ImGui::Combo(comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetCostInfosRef()[costInfoIterator].m_CostType, buffer, IM_ARRAYSIZE(buffer))) 
@@ -617,5 +620,49 @@ namespace applicationUtils {
 			ImGui::EndTable();
 		}
 		ImGui::End();
+	}
+
+	void SaveFileWindowsDialog(const char* filter, char* outPath, int bufferSize)
+	{
+		OPENFILENAME openFileName;
+		ZeroMemory(&openFileName, sizeof(openFileName));
+		openFileName.lStructSize = sizeof(openFileName);
+		openFileName.lpstrFilter = filter;
+		openFileName.lpstrFile = outPath;
+		openFileName.nMaxFile = bufferSize;
+		openFileName.lpstrTitle = "Save to";
+		openFileName.Flags = OFN_OVERWRITEPROMPT;
+
+		if(GetSaveFileName(&openFileName) == TRUE)
+		{
+		
+		}
+	}
+
+	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning)
+	{
+		SerializeSpec spec;
+		spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
+		spec.m_CombineInfos = &v_CombineInfos;
+		SerializerManager serializerManager(spec);
+		if (serializerManager.CheckForNone() == Enum_SerializationStatus::TYPE_NONE)
+		{
+			saveProcess = 1;
+		}
+		else
+		{
+			constexpr int bufferSize = 260;
+			char filePath[bufferSize] = "";
+			SaveFileWindowsDialog("All Files\0*.*\0", filePath, bufferSize);
+			SaveOptions saveOptions;
+			serializerManager.Serialize();
+			saveOptions.m_FilePath = filePath;
+			serializerManager.ProcessForSave(saveOptions);
+			saveProcess = 0;
+		}
+
+		if (saveProcess == 1)
+			ImGui::Text("Saving process is failed because when you choose type you select \'None\'");
+		saveThreadRunning = false;
 	}
 }

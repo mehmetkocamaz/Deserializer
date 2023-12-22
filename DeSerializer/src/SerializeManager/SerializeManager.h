@@ -10,11 +10,11 @@ enum class Enum_SerializationStatus
 	FAIL = 1,
 	UNSUPPORTED = 2,
 	OPEN_FILE_ERROR = 3,
-	EMPTY_BUFFER =4,
+	EMPTY_BUFFER = 4,
 	COMPRESS_FAIL = 5,
+	TYPE_NONE = 6,
 	// MORE ERROR TYPES..
 };
-
 
 
 class SerializerManager {
@@ -23,6 +23,7 @@ public:
 		: m_SerializeSpecification(SerializeSpecification) { }
 	Enum_SerializationStatus Serialize();
 	Enum_SerializationStatus ProcessForSave(SaveOptions saveOptions);
+	Enum_SerializationStatus CheckForNone();
 
 private:
 	Enum_SerializationStatus JsonSerialize();
@@ -34,5 +35,4 @@ private:
 	SerializeSpec m_SerializeSpecification;
 	Enum_SerializationStatus Save(std::filesystem::path filePath);
 	Enum_SerializationStatus EncryptionTest();
-
 };

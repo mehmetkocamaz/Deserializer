@@ -2,20 +2,22 @@
 #include <cstdint>
 enum class Enum_Requirement
 {
-	None = 0,
-	Enchanment,
+
+	Enchanment = 0,
 	Combine,
 	Refine,
-	Socket
+	Socket,
+	None
 };
 
 enum class Enum_Cost
 {
-	None = 0,
-	Silver,
+
+	Silver = 0,
 	Billion,
 	ContributionPoint,
-	BloodPoint
+	BloodPoint,
+	None
 };
 
 enum class Enum_Probability

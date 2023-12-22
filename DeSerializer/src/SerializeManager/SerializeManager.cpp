@@ -4,7 +4,7 @@
 #include "SerializeManager.h"
 #include "BinaryManager/BinaryManager.h"
 #include "iostream"
-#include "EraEncryptor/EraEncryptor.h"
+//#include "EraEncryptor/EraEncryptor.h"
 #include "Utils/Utils.h"
 
 Enum_SerializationStatus SerializerManager::Serialize() {
@@ -35,6 +35,32 @@ Enum_SerializationStatus SerializerManager::ProcessForSave(SaveOptions saveOptio
 }
 
 Enum_SerializationStatus SerializerManager::JsonSerialize() {
+	return Enum_SerializationStatus::SUCCESS;
+}
+
+Enum_SerializationStatus SerializerManager::CheckForNone() {
+	for (const auto& combineInfo : *m_SerializeSpecification.m_CombineInfos) {
+		for(const auto& combineCriteria : combineInfo.GetCombineCriterias()) {
+			
+			for (const auto& targetRequirementInfo : combineCriteria.GetTargetRequirementInfo()) {
+				if (targetRequirementInfo.m_RequirementType == Enum_Requirement::None)
+					return Enum_SerializationStatus::TYPE_NONE;
+			}
+
+			for(const auto& sourceCriteria : combineCriteria.GetSourceCriterias()) {
+			
+				for(const auto& costInfo : sourceCriteria.GetCostInfos()) {
+					if (costInfo.m_CostType == Enum_Cost::None)
+						return Enum_SerializationStatus::TYPE_NONE;
+				}
+				
+				for (const auto& sourceRequirementInfo : sourceCriteria.GetSourceRequirementInfos()) {
+					if (sourceRequirementInfo.m_RequirementType == Enum_Requirement::None)
+						return Enum_SerializationStatus::TYPE_NONE;
+				}
+			}
+		}
+	}
 	return Enum_SerializationStatus::SUCCESS;
 }
 
@@ -89,48 +115,48 @@ Enum_SerializationStatus SerializerManager::BinarySerialize() {
 }
 
 
-Enum_SerializationStatus SerializerManager::EncryptionTest()
-{
-	CryptoPP::AutoSeededRandomPool rng;
-	CryptoPP::SecByteBlock key(CryptoPP::AES::DEFAULT_KEYLENGTH);
-	rng.GenerateBlock(key, key.size());
-	std::cout << key;
-	CryptoPP::SecByteBlock iv(CryptoPP::AES::BLOCKSIZE);
-	rng.GenerateBlock(iv, iv.size());
-	std::cout << iv;
-
-	// Create an instance of AESEncryptor with the generated key and IV
-	EraEncryptor aesEncryptor(key, iv);
-
-
-
-	// Encrypt the data
-	std::vector<uint8_t> ciphertext = aesEncryptor.encrypt(m_CompressedData);
-
-	// Decrypt the data
-	std::vector<uint8_t> decryptedData = aesEncryptor.decrypt(ciphertext);
-
-	// Print the original, encrypted, and decrypted data
-	std::cout << "Original data: ";
-	for (uint8_t byte : m_CompressedData) {
-		std::cout << static_cast<int>(byte) << ' ';
-	}
-	std::cout << std::endl;
-
-	std::cout << "Encrypted data: ";
-	for (uint8_t byte : ciphertext) {
-		std::cout << static_cast<int>(byte) << ' ';
-	}
-	std::cout << std::endl;
-
-	std::cout << "Decrypted data: ";
-	for (uint8_t byte : decryptedData) {
-		std::cout << static_cast<int>(byte) << ' ';
-	}
-	std::cout << std::endl;
-
-	return Enum_SerializationStatus::SUCCESS;
-}
+//Enum_SerializationStatus SerializerManager::EncryptionTest()
+//{
+//	CryptoPP::AutoSeededRandomPool rng;
+//	CryptoPP::SecByteBlock key(CryptoPP::AES::DEFAULT_KEYLENGTH);
+//	rng.GenerateBlock(key, key.size());
+//	std::cout << key;
+//	CryptoPP::SecByteBlock iv(CryptoPP::AES::BLOCKSIZE);
+//	rng.GenerateBlock(iv, iv.size());
+//	std::cout << iv;
+//
+//	// Create an instance of AESEncryptor with the generated key and IV
+//	EraEncryptor aesEncryptor(key, iv);
+//
+//
+//
+//	// Encrypt the data
+//	std::vector<uint8_t> ciphertext = aesEncryptor.encrypt(m_CompressedData);
+//
+//	// Decrypt the data
+//	std::vector<uint8_t> decryptedData = aesEncryptor.decrypt(ciphertext);
+//
+//	// Print the original, encrypted, and decrypted data
+//	std::cout << "Original data: ";
+//	for (uint8_t byte : m_CompressedData) {
+//		std::cout << static_cast<int>(byte) << ' ';
+//	}
+//	std::cout << std::endl;
+//
+//	std::cout << "Encrypted data: ";
+//	for (uint8_t byte : ciphertext) {
+//		std::cout << static_cast<int>(byte) << ' ';
+//	}
+//	std::cout << std::endl;
+//
+//	std::cout << "Decrypted data: ";
+//	for (uint8_t byte : decryptedData) {
+//		std::cout << static_cast<int>(byte) << ' ';
+//	}
+//	std::cout << std::endl;
+//
+//	return Enum_SerializationStatus::SUCCESS;
+//}
 
 
 
@@ -148,6 +174,7 @@ Enum_SerializationStatus SerializerManager::Save(std::filesystem::path filePath)
 		uint32_t uncompressedSize = m_BinaryDataAsByteArray.size();
 		binaryFile.write(reinterpret_cast<const char*>(&uncompressedSize), sizeof(uncompressedSize));
 		binaryFile.write(reinterpret_cast<const char*>(m_CompressedData.data()), m_CompressedData.size());
+		binaryFile.write(reinterpret_cast<const char*>(m_BinaryDataAsByteArray.data()), m_BinaryDataAsByteArray.size());
 
 		binaryFile.close();
 	}

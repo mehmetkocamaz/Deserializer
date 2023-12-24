@@ -11,10 +11,13 @@ Enum_SerializationStatus SerializerManager::Serialize() {
 	switch (m_SerializeSpecification.m_ContentType)
 	{
 	case Enum_SerizalizeContentType::JSON:
+		GetSerializationStatusRef().push_back(Enum_SerializationStatus::SUCCESS);
 		return JsonSerialize();
 	case Enum_SerizalizeContentType::BINARY:
+		GetSerializationStatusRef().push_back(Enum_SerializationStatus::SUCCESS);
 		return BinarySerialize();
 	default:
+		GetSerializationStatusRef().push_back(Enum_SerializationStatus::UNSUPPORTED);
 		return Enum_SerializationStatus::UNSUPPORTED;
 	}
 }
@@ -22,11 +25,17 @@ Enum_SerializationStatus SerializerManager::Serialize() {
 Enum_SerializationStatus SerializerManager::ProcessForSave(SaveOptions saveOptions)
 {
 	if (m_BinaryDataAsByteArray.empty())
+	{
+		GetSerializationStatusRef().push_back(Enum_SerializationStatus::EMPTY_BUFFER);
 		return Enum_SerializationStatus::EMPTY_BUFFER;
+	}
 
 	if (saveOptions.m_SaveFlags & Enum_Save::E_Compress)
 		if (!Utils::Compress(m_BinaryDataAsByteArray, m_CompressedData))
+		{
+			GetSerializationStatusRef().push_back(Enum_SerializationStatus::COMPRESS_FAIL);
 			return Enum_SerializationStatus::COMPRESS_FAIL;
+		}
 	
 	if (saveOptions.m_SaveFlags & Enum_Save::E_XorFilter)
 		Utils::ApplyXorFilter(m_CompressedData, saveOptions.m_XorKey);
@@ -35,6 +44,7 @@ Enum_SerializationStatus SerializerManager::ProcessForSave(SaveOptions saveOptio
 }
 
 Enum_SerializationStatus SerializerManager::JsonSerialize() {
+	GetSerializationStatusRef().push_back(Enum_SerializationStatus::SUCCESS);
 	return Enum_SerializationStatus::SUCCESS;
 }
 
@@ -44,23 +54,33 @@ Enum_SerializationStatus SerializerManager::CheckForNone() {
 			
 			for (const auto& targetRequirementInfo : combineCriteria.GetTargetRequirementInfo()) {
 				if (targetRequirementInfo.m_RequirementType == Enum_Requirement::None)
+				{
+					GetSerializationStatusRef().push_back(Enum_SerializationStatus::TYPE_NONE);
 					return Enum_SerializationStatus::TYPE_NONE;
+				}
 			}
 
 			for(const auto& sourceCriteria : combineCriteria.GetSourceCriterias()) {
 			
 				for(const auto& costInfo : sourceCriteria.GetCostInfos()) {
 					if (costInfo.m_CostType == Enum_Cost::None)
+					{
+						GetSerializationStatusRef().push_back(Enum_SerializationStatus::TYPE_NONE);
 						return Enum_SerializationStatus::TYPE_NONE;
+					}
 				}
 				
 				for (const auto& sourceRequirementInfo : sourceCriteria.GetSourceRequirementInfos()) {
 					if (sourceRequirementInfo.m_RequirementType == Enum_Requirement::None)
+					{
+						GetSerializationStatusRef().push_back(Enum_SerializationStatus::TYPE_NONE);
 						return Enum_SerializationStatus::TYPE_NONE;
+					}
 				}
 			}
 		}
 	}
+	GetSerializationStatusRef().push_back(Enum_SerializationStatus::SUCCESS);
 	return Enum_SerializationStatus::SUCCESS;
 }
 
@@ -109,7 +129,7 @@ Enum_SerializationStatus SerializerManager::BinarySerialize() {
 			m_BinaryDataAsByteArray.push_back(byte);
 		}
 	}
-
+	GetSerializationStatusRef().push_back(Enum_SerializationStatus::SUCCESS);
 	return Enum_SerializationStatus::SUCCESS;
 
 }
@@ -167,6 +187,7 @@ Enum_SerializationStatus SerializerManager::Save(std::filesystem::path filePath)
 	if (!binaryFile.is_open())
 	{
 		std::cerr << "file cannot opened!!" << std::endl;
+		GetSerializationStatusRef().push_back(Enum_SerializationStatus::OPEN_FILE_ERROR);
 		return Enum_SerializationStatus::OPEN_FILE_ERROR;
 	}
 	try
@@ -180,8 +201,9 @@ Enum_SerializationStatus SerializerManager::Save(std::filesystem::path filePath)
 	}
 	catch (const std::exception&)
 	{
+		GetSerializationStatusRef().push_back(Enum_SerializationStatus::FAIL);
 		return Enum_SerializationStatus::FAIL;
 	}
-
+	GetSerializationStatusRef().push_back(Enum_SerializationStatus::SUCCESS);
 	return Enum_SerializationStatus::SUCCESS;
 }

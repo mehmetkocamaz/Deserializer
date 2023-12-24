@@ -63,6 +63,60 @@ namespace ApplicationUtils
 		if (saveProcess == 1)
 			ImGui::Text("Saving process is failed because when you choose type you select \'None\'");
 		saveThreadRunning = false;
+		//for (int32_t statusIterator = 0; statusIterator < serializerManager.GetSerializationStatusRef().size(); statusIterator++)
+		//{
+		//	switch (statusIterator)
+		//	{
+		//	case 0:
+		//		ImGui::Text("Serialization Type Status :");
+		//		ImGui::SameLine(NULL, 20.0f);
+		//		break;
+		//	case 1:
+		//		ImGui::Text("Binary Serialization Status :");
+		//		ImGui::SameLine(NULL, 20.0f);
+		//		break;
+		//	case 2:
+		//		ImGui::Text("Save Options Status :");
+		//		ImGui::SameLine(NULL, 20.0f);
+		//		break;
+		//	case 3:
+		//		ImGui::Text("Save Status :");
+		//		ImGui::SameLine(NULL, 20.0f);
+		//		break;
+		//	default:
+		//		ImGui::Text("The code should not be here!!!");
+		//		ImGui::SameLine(NULL, 20.0f);
+		//		break;
+		//	}
+
+		//	switch (serializerManager.GetSerializationStatusRef()[statusIterator])
+		//	{
+		//	case Enum_SerializationStatus::SUCCESS:
+		//		ImGui::Text("Successful");
+		//		ImGui::NewLine();
+		//		break;
+		//	case Enum_SerializationStatus::COMPRESS_FAIL:
+		//		ImGui::Text("Compress Fail");
+		//		ImGui::NewLine();
+		//		break;
+		//	case Enum_SerializationStatus::EMPTY_BUFFER:
+		//		ImGui::Text("Empty Buffer");
+		//		ImGui::NewLine();
+		//		break;
+		//	case Enum_SerializationStatus::OPEN_FILE_ERROR:
+		//		ImGui::Text("Open File Error");
+		//		ImGui::NewLine();
+		//		break;
+		//	case Enum_SerializationStatus::UNSUPPORTED:
+		//		ImGui::Text("Unsupported");
+		//		ImGui::NewLine();
+		//		break;
+		//	default:
+		//		ImGui::Text("Failed");
+		//		ImGui::NewLine();
+		//		break;
+		//	}
+		//}
 	}
 
 	void SaveFileDialog(PWSTR& pwsz)

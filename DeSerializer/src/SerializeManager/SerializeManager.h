@@ -16,7 +16,6 @@ enum class Enum_SerializationStatus
 	// MORE ERROR TYPES..
 };
 
-
 class SerializerManager {
 public:
 	SerializerManager(SerializeSpec SerializeSpecification)
@@ -24,6 +23,7 @@ public:
 	Enum_SerializationStatus Serialize();
 	Enum_SerializationStatus ProcessForSave(SaveOptions saveOptions);
 	Enum_SerializationStatus CheckForNone();
+	std::vector<Enum_SerializationStatus>& GetSerializationStatusRef() { return m_Status; }
 
 private:
 	Enum_SerializationStatus JsonSerialize();
@@ -35,4 +35,5 @@ private:
 	SerializeSpec m_SerializeSpecification;
 	Enum_SerializationStatus Save(std::filesystem::path filePath);
 	Enum_SerializationStatus EncryptionTest();
+	std::vector<Enum_SerializationStatus> m_Status;
 };

@@ -27,7 +27,7 @@ public:
 #pragma endregion
 
 	Enum_DeserializationStatus Deserialize();
-	void DisplayScreen() const;
+	//void DisplayScreen() const;
 
 private:
 	std::vector<CombineInfo> m_CombineInfos;

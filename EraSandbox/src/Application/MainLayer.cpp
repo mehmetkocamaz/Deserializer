@@ -56,7 +56,6 @@ void MainLayer::OnUIRender()
 	}
 	if (saveThreadRunning)
 	{
-		// CALL THE THREAD HERE PLS
 		std::thread worker(SaveOperation, std::ref(v_CombineInfos), std::ref(saveThreadRunning));
 		worker.join();
 	}

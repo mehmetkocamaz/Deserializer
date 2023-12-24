@@ -645,6 +645,8 @@ namespace applicationUtils {
 		spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
 		spec.m_CombineInfos = &v_CombineInfos;
 		SerializerManager serializerManager(spec);
+		bool test = false;
+		
 		if (serializerManager.CheckForNone() == Enum_SerializationStatus::TYPE_NONE)
 		{
 			saveProcess = 1;
@@ -661,8 +663,61 @@ namespace applicationUtils {
 			saveProcess = 0;
 		}
 
-		if (saveProcess == 1)
-			ImGui::Text("Saving process is failed because when you choose type you select \'None\'");
+		for (int32_t statusIterator = 0; statusIterator < serializerManager.GetSerializationStatusRef().size(); statusIterator++)
+		{
+			switch (statusIterator)
+			{
+			case 0:
+				ImGui::Text("Serialization Type Status :");
+				ImGui::NewLine();
+				break;
+			case 1:
+				ImGui::Text("Binary Serialization Status :");
+				ImGui::NewLine();
+				break;
+			case 2:
+				ImGui::Text("Save Options Status :");
+				ImGui::NewLine();
+				break;
+			case 3:
+				ImGui::Text("Save Status :");
+				ImGui::NewLine();
+				break;
+			default:
+				ImGui::Text("The code should not be here!!!");
+				ImGui::NewLine();
+				break;
+			}
+
+			switch (serializerManager.GetSerializationStatusRef()[statusIterator])
+			{
+			case Enum_SerializationStatus::SUCCESS:
+				ImGui::Text("Successful");
+				ImGui::NewLine();
+				break;
+			case Enum_SerializationStatus::COMPRESS_FAIL:
+				ImGui::Text("Compress Fail");
+				ImGui::NewLine();
+				break;
+			case Enum_SerializationStatus::EMPTY_BUFFER:
+				ImGui::Text("Empty Buffer");
+				ImGui::NewLine();
+				break;
+			case Enum_SerializationStatus::OPEN_FILE_ERROR:
+				ImGui::Text("Open File Error");
+				ImGui::NewLine();
+				break;
+			case Enum_SerializationStatus::UNSUPPORTED:
+				ImGui::Text("Unsupported");
+				ImGui::NewLine();
+				break;
+			default:
+				ImGui::Text("Failed");
+				ImGui::NewLine();
+				break;
+			}
+		}
+
 		saveThreadRunning = false;
 	}
 }

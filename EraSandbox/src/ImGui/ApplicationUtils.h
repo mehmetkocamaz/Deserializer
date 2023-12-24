@@ -4,6 +4,8 @@
 #include <format>
 #include "SerializeManager/SerializeManager.h"
 #include <Windows.h>
+#include <chrono>
+#include <thread>
 
 namespace applicationUtils {
 	static int32_t saveProcess = 0;
@@ -645,6 +647,7 @@ namespace applicationUtils {
 		spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
 		spec.m_CombineInfos = &v_CombineInfos;
 		SerializerManager serializerManager(spec);
+		std::this_thread::sleep_for(std::chrono::seconds(5));
 		if (serializerManager.CheckForNone() == Enum_SerializationStatus::TYPE_NONE)
 		{
 			saveProcess = 1;

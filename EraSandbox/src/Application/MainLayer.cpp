@@ -52,14 +52,14 @@ void MainLayer::OnUIRender()
 	ImGui::Text("Check before save you did not left anything as \'None\' type");
 	if (ImGui::Button("Save"))
 	{
-		saveThreadRunning = true;
+		if (!saveThreadRunning)
+		{
+			saveThreadRunning = true;
+			std::thread v_SaveWorker(SaveOperation, std::ref(v_CombineInfos), std::ref(saveThreadRunning));
+			v_SaveWorker.detach();
+		}
 	}
-	if (saveThreadRunning)
-	{
-		// CALL THE THREAD HERE PLS
-		std::thread worker(SaveOperation, std::ref(v_CombineInfos), std::ref(saveThreadRunning));
-		worker.join();
-	}
+
 	ImGui::End();
 	
 	//ImGui::ShowDemoWindow();

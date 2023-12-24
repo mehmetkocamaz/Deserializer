@@ -115,9 +115,9 @@ namespace Utils {
 	}
 
 	template<typename T>
-	static void ApplyXorFilter(std::vector<T>& rawBuffer, T key)
+	static void ApplyXorFilter(std::vector<T>& rawBuffer, uint32_t key)
 	{
-		for (uint8_t& data : rawBuffer)
+		for (T& data : rawBuffer)
 			data = data ^ key;
 	}
 }

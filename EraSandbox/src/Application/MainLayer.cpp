@@ -1,13 +1,16 @@
 #include "MainLayer.h"
 #include "CombineInfoRoot.h"
 #include "ImGui/ApplicationUtils.h"
+#include "ImGui/SaveOptionsRender.h"
+
 #include <thread>
 
-using namespace applicationUtils;
+using namespace ApplicationUtils;
 
 void MainLayer::OnUIRender() 
 {
 	static bool saveThreadRunning = false;
+
 	ImGui::Begin("Editor");
 	std::vector<CombineInfo>& v_CombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
 
@@ -49,8 +52,24 @@ void MainLayer::OnUIRender()
 	ImGui::End();
 
 	ImGui::Begin("Save Options");
-	ImGui::Text("Check before save you did not left anything as \'None\' type");
-	if (ImGui::Button("Save"))
+
+	ApplicationUtils::DrawSaveOptions();
+
+	std::string v_SaveButtonText = "";
+	static bool s_IsDisabled = false;
+	if (saveThreadRunning)
+	{
+		v_SaveButtonText = "Saving..";
+		ImGui::BeginDisabled();
+		s_IsDisabled = true;
+	}
+	else
+	{
+		s_IsDisabled = false;
+		v_SaveButtonText = "Save";
+	}
+
+	if(ImGui::Button(v_SaveButtonText.c_str()))
 	{
 		if (!saveThreadRunning)
 		{
@@ -59,6 +78,10 @@ void MainLayer::OnUIRender()
 			v_SaveWorker.detach();
 		}
 	}
+
+	if (s_IsDisabled)
+		ImGui::EndDisabled();
+	
 
 	ImGui::End();
 	

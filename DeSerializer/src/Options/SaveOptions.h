@@ -8,13 +8,21 @@ enum Enum_Save : uint32_t
 	E_Default = BIT(0),
 	E_Compress = BIT(1),
 	E_Decompress = BIT(2),
-	E_XorFilter = BIT(3)
+	E_XorFilter = BIT(3),
+	E_CreateArtifact = BIT(4)
+};
+
+enum ArtifactType : uint32_t 
+{
+	JSON,
+	BINARY,
+	JSON_BINARY
 };
 
 struct SaveOptions
 {
 	Enum_Save m_SaveFlags = E_Default;
-	uint8_t m_XorKey = 0;
+	int32_t m_XorKey = 0;
 	std::filesystem::path m_FilePath;
-
+	ArtifactType m_ArtifactType = JSON;
 };

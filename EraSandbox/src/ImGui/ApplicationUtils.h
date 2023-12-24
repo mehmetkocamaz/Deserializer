@@ -7,7 +7,7 @@
 #include <chrono>
 #include <thread>
 
-namespace applicationUtils {
+namespace ApplicationUtils {
 	static int32_t saveProcess = 0;
 	static int32_t combineInfoDisplayIterator = 0;
 	static bool combineCriteriaTrailing = true;
@@ -26,7 +26,6 @@ namespace applicationUtils {
 	void SourceCostInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void SourceProbabilityInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void ShowcaseInit(std::vector<CombineInfo>& v_CombineInfos, int32_t openedCombineInfoIndex);
-	void SaveFileWindowsDialog(const char* filter, char* outPath, int bufferSize);
 	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning);
 	
 	void CombineInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator) {
@@ -624,48 +623,4 @@ namespace applicationUtils {
 		ImGui::End();
 	}
 
-	void SaveFileWindowsDialog(const char* filter, char* outPath, int bufferSize)
-	{
-		OPENFILENAME openFileName;
-		ZeroMemory(&openFileName, sizeof(openFileName));
-		openFileName.lStructSize = sizeof(openFileName);
-		openFileName.lpstrFilter = filter;
-		openFileName.lpstrFile = outPath;
-		openFileName.nMaxFile = bufferSize;
-		openFileName.lpstrTitle = "Save to";
-		openFileName.Flags = OFN_OVERWRITEPROMPT;
-
-		if(GetSaveFileName(&openFileName) == TRUE)
-		{
-		
-		}
-	}
-
-	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning)
-	{
-		SerializeSpec spec;
-		spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
-		spec.m_CombineInfos = &v_CombineInfos;
-		SerializerManager serializerManager(spec);
-		std::this_thread::sleep_for(std::chrono::seconds(5));
-		if (serializerManager.CheckForNone() == Enum_SerializationStatus::TYPE_NONE)
-		{
-			saveProcess = 1;
-		}
-		else
-		{
-			constexpr int bufferSize = 260;
-			char filePath[bufferSize] = "";
-			SaveFileWindowsDialog("All Files\0*.*\0", filePath, bufferSize);
-			SaveOptions saveOptions;
-			serializerManager.Serialize();
-			saveOptions.m_FilePath = filePath;
-			serializerManager.ProcessForSave(saveOptions);
-			saveProcess = 0;
-		}
-
-		if (saveProcess == 1)
-			ImGui::Text("Saving process is failed because when you choose type you select \'None\'");
-		saveThreadRunning = false;
-	}
 }

@@ -49,37 +49,38 @@ Enum_SerializationStatus SerializerManager::JsonSerialize() {
 }
 
 Enum_SerializationStatus SerializerManager::CheckForNone() {
-	for (const auto& combineInfo : *m_SerializeSpecification.m_CombineInfos) {
-		for(const auto& combineCriteria : combineInfo.GetCombineCriterias()) {
+	if(m_SerializeSpecification.m_CombineInfos->size() > 0)
+		for (const auto& combineInfo : *(m_SerializeSpecification.m_CombineInfos)) {
+			for(const auto& combineCriteria : combineInfo.GetCombineCriterias()) {
 			
-			for (const auto& targetRequirementInfo : combineCriteria.GetTargetRequirementInfo()) {
-				if (targetRequirementInfo.m_RequirementType == Enum_Requirement::None)
-				{
-					GetSerializationStatusRef().push_back(Enum_SerializationStatus::TYPE_NONE);
-					return Enum_SerializationStatus::TYPE_NONE;
-				}
-			}
-
-			for(const auto& sourceCriteria : combineCriteria.GetSourceCriterias()) {
-			
-				for(const auto& costInfo : sourceCriteria.GetCostInfos()) {
-					if (costInfo.m_CostType == Enum_Cost::None)
+				for (const auto& targetRequirementInfo : combineCriteria.GetTargetRequirementInfo()) {
+					if (targetRequirementInfo.m_RequirementType == Enum_Requirement::None)
 					{
 						GetSerializationStatusRef().push_back(Enum_SerializationStatus::TYPE_NONE);
 						return Enum_SerializationStatus::TYPE_NONE;
 					}
 				}
+
+				for(const auto& sourceCriteria : combineCriteria.GetSourceCriterias()) {
+			
+					for(const auto& costInfo : sourceCriteria.GetCostInfos()) {
+						if (costInfo.m_CostType == Enum_Cost::None)
+						{
+							GetSerializationStatusRef().push_back(Enum_SerializationStatus::TYPE_NONE);
+							return Enum_SerializationStatus::TYPE_NONE;
+						}
+					}
 				
-				for (const auto& sourceRequirementInfo : sourceCriteria.GetSourceRequirementInfos()) {
-					if (sourceRequirementInfo.m_RequirementType == Enum_Requirement::None)
-					{
-						GetSerializationStatusRef().push_back(Enum_SerializationStatus::TYPE_NONE);
-						return Enum_SerializationStatus::TYPE_NONE;
+					for (const auto& sourceRequirementInfo : sourceCriteria.GetSourceRequirementInfos()) {
+						if (sourceRequirementInfo.m_RequirementType == Enum_Requirement::None)
+						{
+							GetSerializationStatusRef().push_back(Enum_SerializationStatus::TYPE_NONE);
+							return Enum_SerializationStatus::TYPE_NONE;
+						}
 					}
 				}
 			}
 		}
-	}
 	GetSerializationStatusRef().push_back(Enum_SerializationStatus::SUCCESS);
 	return Enum_SerializationStatus::SUCCESS;
 }

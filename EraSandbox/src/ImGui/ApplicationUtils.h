@@ -26,8 +26,9 @@ namespace ApplicationUtils {
 	void SourceCostInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void SourceProbabilityInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void ShowcaseInit(std::vector<CombineInfo>& v_CombineInfos, int32_t openedCombineInfoIndex);
-	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning);
-	
+	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus);
+
+
 	void CombineInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator) {
 		bool isCombineInfoOpen = true;
 		char combineInfoTabName[16];

@@ -43,7 +43,6 @@ namespace ApplicationUtils
 
 	static FileSaveOptions s_FileSaveOptions;
 
-	//void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning)
 	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus)
 	{
 		SerializeSpec spec;

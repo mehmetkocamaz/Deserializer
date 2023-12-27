@@ -17,6 +17,7 @@ namespace ApplicationUtils {
 	int32_t removeSourceRequirementIndex = 0;
 	int32_t removeSourceCostIndex = 0;
 	int32_t removeSourceProbabilityIndex = 0;
+	
 	//std::vector<bool> uniqueTargetReq{ false, false, false, false }; // 0 Enchantment, 1 Combine, 2 Refine, 3 Socket
 
 	void CombineCriteriaCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator);
@@ -26,7 +27,7 @@ namespace ApplicationUtils {
 	void SourceCostInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void SourceProbabilityInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void ShowcaseInit(std::vector<CombineInfo>& v_CombineInfos, int32_t openedCombineInfoIndex);
-	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus);
+	//void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus, int32_t& inputBufferSize);
 
 
 	void CombineInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator) {

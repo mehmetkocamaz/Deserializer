@@ -9,6 +9,7 @@ namespace ApplicationUtils
 	struct FileLoadOptions
 	{
 		static constexpr size_t s_BufferSize = 256;
+		PWSTR m_Pwstr{};
 		char m_InputBuffer[s_BufferSize] = "";
 		char m_FileNameBuffer[s_BufferSize] = "CombineInfo.ERA";
 		bool m_XorFilterCheck = false;
@@ -53,17 +54,49 @@ namespace ApplicationUtils
 		deserializerManager.Deserialize();
 		v_CombineInfos = deserializerManager.GetCombineInfos();
 		int32_t combineInfoIterator = s_FileLoadOptions.m_FirstIndex - 1;
-		while (combineInfoIterator <= (s_FileLoadOptions.m_LastIndex - 1)) {
-			v_CombineInfos[combineInfoIterator].GetCombineInfoStatusRef() = true;
-			for (int32_t criteriaIterator = 0; criteriaIterator < v_CombineInfos[combineInfoIterator].GetCombineCriteriasRef().size(); criteriaIterator++) {
-				v_CombineInfos[combineInfoIterator].GetCombineCriteriasRef()[criteriaIterator].GetCombineCriteriaStatus() = true;
-				for (int32_t sourceCriteriaIterator = 0; sourceCriteriaIterator < v_CombineInfos[combineInfoIterator].GetCombineCriteriasRef()[criteriaIterator].GetSourceCriteriasRef().size(); sourceCriteriaIterator++) {
-					v_CombineInfos[combineInfoIterator].GetCombineCriteriasRef()[criteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetSourceCriteriaStatusRef() = true;
+		if(s_FileLoadOptions.m_LastIndex <= v_CombineInfos.size())
+			while (combineInfoIterator <= (s_FileLoadOptions.m_LastIndex - 1)) {
+				v_CombineInfos[combineInfoIterator].GetCombineInfoStatusRef() = true;
+				for (int32_t criteriaIterator = 0; criteriaIterator < v_CombineInfos[combineInfoIterator].GetCombineCriteriasRef().size(); criteriaIterator++) {
+					v_CombineInfos[combineInfoIterator].GetCombineCriteriasRef()[criteriaIterator].GetCombineCriteriaStatus() = true;
+					for (int32_t sourceCriteriaIterator = 0; sourceCriteriaIterator < v_CombineInfos[combineInfoIterator].GetCombineCriteriasRef()[criteriaIterator].GetSourceCriteriasRef().size(); sourceCriteriaIterator++) {
+						v_CombineInfos[combineInfoIterator].GetCombineCriteriasRef()[criteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetSourceCriteriaStatusRef() = true;
+					}
+				}
+				combineInfoIterator++;
+			}
+		loadThreadRunning = false;
+	}
+
+	void LoadFileDialog(PWSTR& pwsz)
+	{
+
+		IFileDialog* pfd;
+		HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pfd));
+		if (SUCCEEDED(hr)) {
+			DWORD dwOptions;
+			if (SUCCEEDED(pfd->GetOptions(&dwOptions))) {
+				pfd->SetOptions(dwOptions | FOS_PICKFOLDERS);
+			}
+		}
+
+		if (SUCCEEDED(hr)) {
+			hr = pfd->Show(NULL);
+			if (SUCCEEDED(hr)) {
+				IShellItem* psi;
+				hr = pfd->GetResult(&psi);
+				if (SUCCEEDED(hr)) {
+					PWSTR pszPath;
+					hr = psi->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
+					if (SUCCEEDED(hr)) {
+						pwsz = pszPath;
+					}
+					psi->Release();
 				}
 			}
-			combineInfoIterator++;
+			pfd->Release();
 		}
-		loadThreadRunning = false;
+
 	}
 	
 	void DrawLoadOptions() {
@@ -71,9 +104,17 @@ namespace ApplicationUtils
 		ImGui::SameLine(NULL, 31.0f);
 		ImGui::InputText("##inputLoad", s_FileLoadOptions.m_InputBuffer, s_FileLoadOptions.s_BufferSize);
 		ImGui::SameLine();
-		if (ImGui::Button("Browse")) {
 
+		if (ImGui::Button("Browse")) {
+			constexpr int bufferSize = 260;
+			char filePath[bufferSize] = "";
+			CoInitialize(NULL);
+			CoTaskMemFree(s_FileLoadOptions.m_Pwstr);
+			LoadFileDialog(s_FileLoadOptions.m_Pwstr);
+			strncpy(s_FileLoadOptions.m_InputBuffer, PWSTRToStdString(s_FileLoadOptions.m_Pwstr).c_str(), s_FileLoadOptions.s_BufferSize - 1);
+			CoUninitialize();
 		}
+
 		ImGui::Text("File Name:");
 		ImGui::SameLine(NULL, 51.0f);
 		ImGui::InputText("##inputLoad2", s_FileLoadOptions.m_FileNameBuffer, s_FileLoadOptions.s_BufferSize);

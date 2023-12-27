@@ -3,6 +3,7 @@
 #include <iostream>
 #include <windows.h>
 #include <shobjidl.h> 
+#include <cstring>
 
 namespace ApplicationUtils
 {
@@ -43,7 +44,7 @@ namespace ApplicationUtils
 
 	static FileSaveOptions s_FileSaveOptions;
 
-	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus)
+	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus, int32_t& inputBufferSize)
 	{
 		SerializeSpec spec;
 		spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
@@ -63,32 +64,38 @@ namespace ApplicationUtils
 		//	ImGui::Text("Saving process is failed because when you choose type you select \'None\'");
 
 		saveThreadRunning = false;
-
-		for (int32_t statusIterator = 0; statusIterator < serializerManager.GetSerializationStatusRef().size(); statusIterator++)
-		{
-			std::cout << serializationTypeStatus << std::endl;
-			switch (serializerManager.GetSerializationStatusRef()[statusIterator])
+		inputBufferSize = strlen(s_FileSaveOptions.m_InputBuffer);
+		if(inputBufferSize > 2)
+			for (int32_t statusIterator = 0; statusIterator < serializerManager.GetSerializationStatusRef().size(); statusIterator++)
 			{
-			case Enum_SerializationStatus::SUCCESS:
-				statusIterator == 0 ? serializationTypeStatus = "Success" : (statusIterator == 1 ? binarySerializationStatus = "Success" : (statusIterator == 2 ? saveOptionsStatus = "Success" : (statusIterator == 3 ? saveStatus = "Success" : "Error")));
-				break;
-			case Enum_SerializationStatus::COMPRESS_FAIL:
-				statusIterator == 0 ? serializationTypeStatus = "Compress Fail" : (statusIterator == 1 ? binarySerializationStatus = "Compress Fail" : (statusIterator == 2 ? saveOptionsStatus = "Compress Fail" : (statusIterator == 3 ? saveStatus = "Compress Fail" : "Error")));
-				break;
-			case Enum_SerializationStatus::EMPTY_BUFFER:
-				statusIterator == 0 ? serializationTypeStatus = "Empty Buffer" : (statusIterator == 1 ? binarySerializationStatus = "Empty Buffer" : (statusIterator == 2 ? saveOptionsStatus = "Empty Buffer" : (statusIterator == 3 ? saveStatus = "Empty Buffer" : "Error")));
-				break;
-			case Enum_SerializationStatus::OPEN_FILE_ERROR:
-				statusIterator == 0 ? serializationTypeStatus = "Open File Error" : (statusIterator == 1 ? binarySerializationStatus = "Open File Error" : (statusIterator == 2 ? saveOptionsStatus = "Open File Error" : (statusIterator == 3 ? saveStatus = "Open File Error" : "Error")));
-				break;
-			case Enum_SerializationStatus::UNSUPPORTED:
-				statusIterator == 0 ? serializationTypeStatus = "Unsupported" : (statusIterator == 1 ? binarySerializationStatus = "Unsupported" : (statusIterator == 2 ? saveOptionsStatus = "Unsupported" : (statusIterator == 3 ? saveStatus = "Unsupported" : "Error")));
-				break;
-			default:
-				statusIterator == 0 ? serializationTypeStatus = "Error" : (statusIterator == 1 ? binarySerializationStatus = "Error" : (statusIterator == 2 ? saveOptionsStatus = "Error" : (statusIterator == 3 ? saveStatus = "Error" : "Error")));
-				break;
+				//std::cout << serializationTypeStatus << std::endl;
+				switch (serializerManager.GetSerializationStatusRef()[statusIterator])
+				{
+				case Enum_SerializationStatus::SUCCESS:
+					statusIterator == 0 ? serializationTypeStatus = "Success" : (statusIterator == 1 ? binarySerializationStatus = "Success" : (statusIterator == 2 ? saveOptionsStatus = "Success" : (statusIterator == 3 ? saveStatus = "Success" : "Error")));
+					break;
+				case Enum_SerializationStatus::COMPRESS_FAIL:
+					statusIterator == 0 ? serializationTypeStatus = "Compress Fail" : (statusIterator == 1 ? binarySerializationStatus = "Compress Fail" : (statusIterator == 2 ? saveOptionsStatus = "Compress Fail" : (statusIterator == 3 ? saveStatus = "Compress Fail" : "Error")));
+					break;
+				case Enum_SerializationStatus::EMPTY_BUFFER:
+					statusIterator == 0 ? serializationTypeStatus = "Empty Buffer" : (statusIterator == 1 ? binarySerializationStatus = "Empty Buffer" : (statusIterator == 2 ? saveOptionsStatus = "Empty Buffer" : (statusIterator == 3 ? saveStatus = "Empty Buffer" : "Error")));
+					break;
+				case Enum_SerializationStatus::OPEN_FILE_ERROR:
+					statusIterator == 0 ? serializationTypeStatus = "Open File Error" : (statusIterator == 1 ? binarySerializationStatus = "Open File Error" : (statusIterator == 2 ? saveOptionsStatus = "Open File Error" : (statusIterator == 3 ? saveStatus = "Open File Error" : "Error")));
+					break;
+				case Enum_SerializationStatus::UNSUPPORTED:
+					statusIterator == 0 ? serializationTypeStatus = "Unsupported" : (statusIterator == 1 ? binarySerializationStatus = "Unsupported" : (statusIterator == 2 ? saveOptionsStatus = "Unsupported" : (statusIterator == 3 ? saveStatus = "Unsupported" : "Error")));
+					break;
+				default:
+					statusIterator == 0 ? serializationTypeStatus = "Error" : (statusIterator == 1 ? binarySerializationStatus = "Error" : (statusIterator == 2 ? saveOptionsStatus = "Error" : (statusIterator == 3 ? saveStatus = "Error" : "Error")));
+					break;
+				}
 			}
+		else
+		{
+			serializationTypeStatus = "Empty File Path";
 		}
+
 	}
 
 	void SaveFileDialog(PWSTR& pwsz)

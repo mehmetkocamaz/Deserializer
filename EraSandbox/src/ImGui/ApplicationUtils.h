@@ -18,6 +18,27 @@ namespace ApplicationUtils {
 	int32_t removeSourceCostIndex = 0;
 	int32_t removeSourceProbabilityIndex = 0;
 	
+	static CombineInfo combineInfoBuffer; // DONE
+	static int32_t combineInfoItemSelected = -1;
+	
+	static CombineCriteria combineCriteriaBuffer; // DONE
+	static int32_t criteriaItemSelected = -1;
+
+	static SourceCriteria sourceCriteriaBuffer; // DONE 
+	static int32_t sourceCriteriaItemSelected = -1;
+
+	static std::vector<RequirementInfo> requirementInfoBuffer;
+	static int32_t targetRequirementItemSelected = -1;
+
+	static std::vector<CostInfo> costInfoBuffer;
+	static int32_t costInfoItemSelected = -1;
+
+	static std::vector<ProbabilityInfo> probabilityInfoBuffer;
+	static int32_t probabilityInfoItemSelected = -1;
+
+	static std::vector<RequirementInfo> sourceRequirementInfoBuffer;
+	static int32_t sourceRequirementInfoItemSelected = -1;
+	
 	//std::vector<bool> uniqueTargetReq{ false, false, false, false }; // 0 Enchantment, 1 Combine, 2 Refine, 3 Socket
 
 	void CombineCriteriaCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator);
@@ -44,11 +65,34 @@ namespace ApplicationUtils {
 				{
 					combineInfoDisplayIterator = combineInfoIterator;
 				}
+				if (ImGui::IsItemClicked(1)) {
+					combineInfoItemSelected = combineInfoIterator;
+					ImGui::OpenPopup(std::format("Copy Combine Info {0}", (combineInfoItemSelected + 1)).c_str());
+				}
 				if (combineInfoDisplayIterator >= 0)
 				{
 					ShowcaseInit(v_CombineInfo, combineInfoIterator);
 				}
-
+				if (combineInfoItemSelected != -1) {
+					if (ImGui::BeginPopupModal(std::format("Copy Combine Info {0}", (combineInfoItemSelected + 1)).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+						ImGui::Text("What do you want to with this combine info?");
+						ImGui::Separator();
+						if (ImGui::Button("Copy")) {
+							combineInfoBuffer = v_CombineInfo[combineInfoItemSelected];
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::SameLine(NULL, 15.0f);
+						if (ImGui::Button("Paste")) {
+							v_CombineInfo[combineInfoItemSelected] = combineInfoBuffer;
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::SameLine(NULL, 15.0f);
+						if (ImGui::Button("Cancel")) {
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::EndPopup();
+					}
+				}
 				ImGui::Text("%s", combineInfoTabName);
 				ImGui::InputScalar("Target Item Id", ImGuiDataType_U32, &v_CombineInfo[combineInfoIterator].GetTargetItemIdRef(), NULL, NULL, "%u");
 				if (ImGui::BeginTabBar("CombineCriteriaTabBar", tab_bar_flags)) {
@@ -103,6 +147,12 @@ namespace ApplicationUtils {
 
 			if(v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetCombineCriteriaStatus())
 				if (ImGui::BeginTabItem(combineCriteriaTabName, &isCombineCriteriaOpen, ImGuiTabItemFlags_None)) {
+
+					if (ImGui::IsItemClicked(1)) {
+						criteriaItemSelected = combineCriteriaIterator;
+						ImGui::OpenPopup(std::format("Copy Combine Criteria {0}", (criteriaItemSelected + 1)).c_str());
+					}
+
 					ImGui::Text("Combine Criteria %d", combineCriteriaIterator + 1);
 
 					if (ImGui::BeginTabBar("CombineCriteriaExtensiveTabBar", tab_bar_flags2))
@@ -125,6 +175,28 @@ namespace ApplicationUtils {
 
 						ImGui::EndTabBar();
 					}
+
+					if (criteriaItemSelected != -1) {
+						if (ImGui::BeginPopupModal(std::format("Copy Combine Criteria {0}", (criteriaItemSelected + 1)).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+							ImGui::Text("What do you want to with this combine criteria?");
+							ImGui::Separator();
+							if (ImGui::Button("Copy")) {
+								combineCriteriaBuffer = v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[criteriaItemSelected];
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::SameLine(NULL, 15.0f);
+							if (ImGui::Button("Paste")) {
+								v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[criteriaItemSelected] = combineCriteriaBuffer;
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::SameLine(NULL, 15.0f);
+							if (ImGui::Button("Cancel")) {
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::EndPopup();
+						}
+					}
+
 					ImGui::EndTabItem();
 				}
 
@@ -173,6 +245,11 @@ namespace ApplicationUtils {
 			if(v_SourceCriterias[sourceCriteriaIterator].GetSourceCriteriaStatusRef())
 				if (ImGui::BeginTabItem(sourceCriteriaName, &isSourceCriteriaOpen, ImGuiTabItemFlags_None))
 				{
+					if (ImGui::IsItemClicked(1)) {
+						sourceCriteriaItemSelected = sourceCriteriaIterator;
+						ImGui::OpenPopup(std::format("Copy Source Criteria {0}", (sourceCriteriaItemSelected + 1)).c_str());
+					}
+
 					ImGui::NewLine();
 				
 					ImGui::InputScalar("Source Item Id", ImGuiDataType_U32, &v_SourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef(), NULL, NULL, "%u");
@@ -193,6 +270,28 @@ namespace ApplicationUtils {
 						SourceRequirementInfoCreator(v_CombineInfo, combineInfoIterator, combineCriteriaIterator, v_SourceCriterias, sourceCriteriaIterator);
 						ImGui::EndTabBar();
 					}
+
+					if (sourceCriteriaItemSelected != -1) {
+						if (ImGui::BeginPopupModal(std::format("Copy Source Criteria {0}", (sourceCriteriaItemSelected + 1)).c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+							ImGui::Text("What do you want to with this source criteria?");
+							ImGui::Separator();
+							if (ImGui::Button("Copy")) {
+								sourceCriteriaBuffer = v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaItemSelected];
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::SameLine(NULL, 15.0f);
+							if (ImGui::Button("Paste")) {
+								v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaItemSelected] = sourceCriteriaBuffer;
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::SameLine(NULL, 15.0f);
+							if (ImGui::Button("Cancel")) {
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::EndPopup();
+						}
+					}
+
 					ImGui::EndTabItem();
 				}
 

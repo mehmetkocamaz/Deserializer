@@ -46,7 +46,7 @@ namespace ApplicationUtils
 
 	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus, int32_t& inputBufferSize)
 	{
-		SerializeSpec spec;
+		SerializeSpec spec{};
 		spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
 		spec.m_CombineInfos = &v_CombineInfos;
 		SerializerManager serializerManager(spec);

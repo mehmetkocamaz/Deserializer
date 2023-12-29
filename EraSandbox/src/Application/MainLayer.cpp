@@ -140,13 +140,8 @@ void MainLayer::OnUIRender()
 			loadThreadRunning = true;
 			std::thread v_LoadWorker(LoadOperation, std::ref(v_CombineInfos), std::ref(loadThreadRunning));
 			v_LoadWorker.detach();
-
 		}
 
-		if (s_FileLoadOptions.m_FirstIndex <= 0)
-			s_FileLoadOptions.m_FirstIndex = 1;
-		if (s_FileLoadOptions.m_LastIndex > v_CombineInfos.size())
-			s_FileLoadOptions.m_LastIndex = v_CombineInfos.size();
 	}
 
 

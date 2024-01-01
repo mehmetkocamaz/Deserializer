@@ -24,6 +24,7 @@ public:
 #pragma endregion
 #pragma region Getters
 	std::vector<CombineInfo> GetCombineInfos() const;
+	std::filesystem::path GetFilePath()const { return m_FilePath; }
 #pragma endregion
 
 	Enum_DeserializationStatus Deserialize();

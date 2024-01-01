@@ -55,8 +55,11 @@ void MainLayer::OnUIRender()
 
 	ImGui::Begin("Save Options");
 	int32_t inputBufferSize = 0;
-
-	ApplicationUtils::DrawSaveOptions();
+	static std::string savePathErrorText = "";
+	static std::string saveNameErrorText = "";
+	bool isSavePathEmpty = true;
+	bool isSaveNameEmpty = true;
+	ApplicationUtils::DrawSaveOptions(savePathErrorText, saveNameErrorText);
 
 	std::string v_SaveButtonText = "";
 	static bool s_IsSaveDisabled = false;
@@ -78,10 +81,29 @@ void MainLayer::OnUIRender()
 	static std::string saveOptionsStatus = "Did not saved yet.";
 	static std::string saveStatus = "Did not saved yet.";
 
+
 	if(ImGui::Button(v_SaveButtonText.c_str()))
 	{
-		ImGui::OpenPopup("Save");
+		if (savePathErrorText.size() > 3) {
+			isSavePathEmpty = true;
+		}
+		else if (saveNameErrorText.size() > 3) {
+			isSaveNameEmpty = true;
+		}
+		else
+		{
+			isSavePathEmpty = false;
+			isSaveNameEmpty = false;
+
+			ImGui::OpenPopup("Save");
+		}
 	}
+	if (isSavePathEmpty)
+		ImGui::Text(savePathErrorText.c_str());
+	if(isSaveNameEmpty)
+		ImGui::Text(saveNameErrorText.c_str());
+
+
 	if (ImGui::BeginPopupModal("Save", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Do you really want to save this data ?");
 		ImGui::Text("IF YOU CLICK YES, IT MAY OVERWRITE ANOTHER FILE WITH THE SAME NAME!");
@@ -133,7 +155,9 @@ void MainLayer::OnUIRender()
 	ImGui::End();
 
 	ImGui::Begin("Load Options");
-	DrawLoadOptions();
+	static std::string loadErrorText = "";
+	bool isLoadPathEmpty = true;
+	DrawLoadOptions(loadErrorText);
 	std::string v_LoadButtonText = "";
 	static bool s_IsLoadDisabled = false;
 	
@@ -151,8 +175,17 @@ void MainLayer::OnUIRender()
 
 	if (ImGui::Button(v_LoadButtonText.c_str()))
 	{
-		ImGui::OpenPopup("Load");
+		if(loadErrorText.size() > 3) {
+			isLoadPathEmpty = true;
+		}
+		else
+		{
+			isLoadPathEmpty = false;
+			ImGui::OpenPopup("Load");
+		}
 	}
+	if(isLoadPathEmpty)
+		ImGui::Text(loadErrorText.c_str());
 
 	if (ImGui::BeginPopupModal("Load", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::Text("Do you really want to load new data ?");
@@ -164,8 +197,8 @@ void MainLayer::OnUIRender()
 				loadThreadRunning = true;
 				std::thread v_LoadWorker(LoadOperation, std::ref(v_CombineInfos), std::ref(loadThreadRunning));
 				v_LoadWorker.detach();
-				ImGui::CloseCurrentPopup();
 			}
+			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("No")) {

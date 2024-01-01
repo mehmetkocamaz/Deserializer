@@ -142,13 +142,18 @@ namespace ApplicationUtils
 		return std::string(buffer.begin(), buffer.end() - 1); // Exclude the null terminator
 	}
 
-	void DrawSaveOptions()
+	void DrawSaveOptions(std::string& v_SavePathErrorText, std::string& v_SaveNameErrorText)
 	{
 		ImGui::Text("Path to save:"); 
 		ImGui::SameLine(NULL, 16.0f);
 
 		// Copy the string into the buffer
 		ImGui::InputText("##input", s_FileSaveOptions.m_InputBuffer, s_FileSaveOptions.s_BufferSize);
+		if (strlen(s_FileSaveOptions.m_InputBuffer) < 3) {
+			v_SavePathErrorText = "The path cannot be empty!";
+		}
+		else
+			v_SavePathErrorText.clear();
 		ImGui::SameLine();
 
 		if (ImGui::Button("Browse"))
@@ -166,6 +171,11 @@ namespace ApplicationUtils
 		ImGui::SameLine(NULL,34.0f);
 		
 		ImGui::InputText("##input2", s_FileSaveOptions.m_FileNameBuffer, s_FileSaveOptions.s_BufferSize);
+		if (strlen(s_FileSaveOptions.m_FileNameBuffer) < 1) {
+			v_SaveNameErrorText = "The file name cannot be empty!";
+		}
+		else
+			v_SaveNameErrorText.clear();
 
 		ImGui::Text("Xor Filter:");
 		ImGui::SameLine(NULL, 41.0f);

@@ -131,10 +131,15 @@ namespace ApplicationUtils
 
 
 	
-	void DrawLoadOptions() {
+	void DrawLoadOptions(std::string& v_LoadErrorText) {
 		ImGui::Text("Path to Load:");
 		ImGui::SameLine(NULL, 31.0f);
 		ImGui::InputText("##inputLoad", s_FileLoadOptions.m_InputBuffer, s_FileLoadOptions.s_BufferSize);
+		if (strlen(s_FileLoadOptions.m_InputBuffer) < 3) {
+			v_LoadErrorText = "The path cannot be empty!";
+		}
+		else
+			v_LoadErrorText.clear();
 		ImGui::SameLine();
 
 		if (ImGui::Button("Browse")) {

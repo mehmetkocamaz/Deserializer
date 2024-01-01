@@ -12,15 +12,12 @@ namespace ApplicationUtils
 		static constexpr size_t s_BufferSize = 256;
 		PWSTR m_Pwstr{};
 		char m_InputBuffer[s_BufferSize] = "";
-		//char m_FileNameBuffer[s_BufferSize] = "CombineInfo.ERA";
 		bool m_XorFilterCheck = false;
 		bool m_DecompressionCheck = false;
 		int32_t m_XorValue = 0;
 		int32_t m_FirstIndex = 0;
 		int32_t m_LastIndex = 0;
 		bool m_PartitionCheck = false;
-		//bool m_ArtifactCheck = false;
-		//int32_t m_ArtifactSelected = 0;
 
 		SaveOptions TranspileToLoadOptions() {
 			SaveOptions v_LoadOptions{};
@@ -36,12 +33,6 @@ namespace ApplicationUtils
 			}
 
 			v_LoadOptions.m_ArtifactType = BINARY;
-
-			/*if (m_ArtifactCheck) {
-				v_LoadOptions.m_SaveFlags = (Enum_Save)(v_LoadOptions.m_SaveFlags | E_CreateArtifact);
-				v_LoadOptions.m_ArtifactType = (ArtifactType)m_ArtifactSelected;
-			}*/
-
 			return v_LoadOptions;
 		}
 	};
@@ -155,10 +146,6 @@ namespace ApplicationUtils
 			strncpy(s_FileLoadOptions.m_InputBuffer, PWSTRToStdString(s_FileLoadOptions.m_Pwstr).c_str(), s_FileLoadOptions.s_BufferSize - 1);
 			CoUninitialize();
 		}
-
-		//ImGui::Text("File Name:");
-		//ImGui::SameLine(NULL, 51.0f);
-		//ImGui::InputText("##inputLoad2", s_FileLoadOptions.m_FileNameBuffer, s_FileLoadOptions.s_BufferSize);
 
 		ImGui::Text("Xor Filter:");
 		ImGui::SameLine(NULL, 59.0f);

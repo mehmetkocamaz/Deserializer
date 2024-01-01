@@ -72,6 +72,7 @@ void MainLayer::OnUIRender()
 		v_SaveButtonText = "Save";
 	}
 
+	// YOU NEED TO CHANGE THE STRINGS BECAUSE EVERYTHING SHOULDNT BE STATIC (HEAP MEM ALLOC OR EDIT THE SCOPE)
 	static std::string serializationTypeStatus = "Did not saved yet.";
 	static std::string binarySerializationStatus = "Did not saved yet.";
 	static std::string saveOptionsStatus = "Did not saved yet.";
@@ -79,12 +80,27 @@ void MainLayer::OnUIRender()
 
 	if(ImGui::Button(v_SaveButtonText.c_str()))
 	{
-		if (!saveThreadRunning)
-		{
-			saveThreadRunning = true;
-			std::thread v_SaveWorker(SaveOperation, std::ref(v_CombineInfos), std::ref(saveThreadRunning), std::ref(serializationTypeStatus), std::ref(binarySerializationStatus), std::ref(saveOptionsStatus), std::ref(saveStatus), std::ref(inputBufferSize));
-			v_SaveWorker.detach();
+		ImGui::OpenPopup("Save");
+	}
+	if (ImGui::BeginPopupModal("Save", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Do you really want to save this data ?");
+		ImGui::Text("IF YOU CLICK YES, IT MAY OVERWRITE ANOTHER FILE WITH THE SAME NAME!");
+		ImGui::Separator();
+		if (ImGui::Button("Yes")) {
+			if (!saveThreadRunning)
+			{
+				saveThreadRunning = true;
+				std::thread v_SaveWorker(SaveOperation, std::ref(v_CombineInfos), std::ref(saveThreadRunning), std::ref(serializationTypeStatus), std::ref(binarySerializationStatus), std::ref(saveOptionsStatus), std::ref(saveStatus), std::ref(inputBufferSize));
+				v_SaveWorker.detach();
+			}
+			ImGui::CloseCurrentPopup();
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("No")) {
+			saveThreadRunning = false;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
 	}
 
 	if (s_IsSaveDisabled)
@@ -135,17 +151,31 @@ void MainLayer::OnUIRender()
 
 	if (ImGui::Button(v_LoadButtonText.c_str()))
 	{
-		if (!loadThreadRunning)
-		{
-			loadThreadRunning = true;
-			std::thread v_LoadWorker(LoadOperation, std::ref(v_CombineInfos), std::ref(loadThreadRunning));
-			v_LoadWorker.detach();
-		}
-
+		ImGui::OpenPopup("Load");
 	}
 
+	if (ImGui::BeginPopupModal("Load", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::Text("Do you really want to load new data ?");
+		ImGui::Text("IF YOU CLICK YES YOU WILL LOSE YOUR UNSAVED DATA!");
+		ImGui::Separator();
+		if (ImGui::Button("Yes")) {
+			if (!loadThreadRunning)
+			{
+				loadThreadRunning = true;
+				std::thread v_LoadWorker(LoadOperation, std::ref(v_CombineInfos), std::ref(loadThreadRunning));
+				v_LoadWorker.detach();
+				ImGui::CloseCurrentPopup();
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("No")) {
+			loadThreadRunning = false;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
 
-	if (s_IsSaveDisabled)
+	if (s_IsLoadDisabled)
 		ImGui::EndDisabled();
 
 	ImGui::End();

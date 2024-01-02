@@ -5,6 +5,13 @@
 #include <shobjidl.h> 
 #include <cstring>
 
+
+#include <sys/stat.h>
+#include <direct.h>
+#include <cstdlib>
+#include <chrono>
+#include <ctime>
+
 namespace ApplicationUtils
 {
 
@@ -43,6 +50,7 @@ namespace ApplicationUtils
 	};
 
 	static FileSaveOptions s_FileSaveOptions;
+	static FileSaveOptions s_FileAutoSaveOptions;
 
 	void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus, int32_t& inputBufferSize)
 	{
@@ -200,4 +208,60 @@ namespace ApplicationUtils
 			ImGui::Combo("##artifactcombo", &s_FileSaveOptions.m_ArtifactSelected, buffer,3);
 		}
 	}
+
+	void AutoSaveFilenameInit(time_t& v_Now, std::string& v_FileName) {
+		tm* localTime = localtime(&v_Now);
+		int32_t year = localTime->tm_year + 1900;
+		int32_t month = localTime->tm_mon + 1;
+		int32_t day = localTime->tm_mday;
+		int32_t hour = localTime->tm_hour;
+		int32_t minute = localTime->tm_min;
+		v_FileName = "AUTOSAVE[" + std::to_string(month) + "/" + std::to_string(day) + "/" + std::to_string(year) + "/" + std::to_string(hour) + " : " + std::to_string(minute) + "]";
+	}
+
+	void AutoSaveDirectoryInit() {
+		const char* autoSaveDirectoryPath = "C:\\Users\\kocam\\AppData\\Roaming";
+		const char* eraPath = "\\ERA";
+		std::string fullEraPath = autoSaveDirectoryPath + std::string(eraPath);
+		int result = _mkdir(fullEraPath.c_str());
+
+		if (result == 0) {
+			//ImGui::Text("Directory created on %s", fullEraPath.c_str());
+		}
+		//else
+			//ImGui::Text("Directory cannot created!");
+	}
+
+	void AutoSaveOperation(std::vector<CombineInfo>& v_CombineInfos, std::chrono::time_point < std::chrono::steady_clock>& s_StartTime, std::chrono::time_point < std::chrono::steady_clock>& s_EndTime, bool& s_AutoSaveThreadRunning) {
+
+		AutoSaveDirectoryInit();
+		if (s_StartTime == s_EndTime) {
+			s_AutoSaveThreadRunning = true;
+			const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
+			strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
+			time_t now = time(0);
+			std::string fileName;
+			AutoSaveFilenameInit(now, fileName);
+			s_FileAutoSaveOptions.m_XorValue = 22012001;
+			strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
+
+			SerializeSpec spec{};
+			spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
+			spec.m_CombineInfos = &v_CombineInfos;
+			SerializerManager serializerManager(spec);
+			serializerManager.Serialize();
+			serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
+			s_StartTime = std::chrono::steady_clock::now();
+			s_EndTime = s_StartTime + std::chrono::minutes(2);
+		}
+		else
+			s_AutoSaveThreadRunning = false;
+	}
+
+
+	//void DrawAutoSave() {
+	//	
+	//}
+
+
 }

@@ -12,6 +12,9 @@ void MainLayer::OnUIRender()
 {
 	static bool saveThreadRunning = false;
 	static bool loadThreadRunning = false;
+	static bool autoSaveThreadRunning = false;
+	static auto startTime = std::chrono::steady_clock::now();
+	static auto endTime = startTime + std::chrono::minutes(2);
 
 	ImGui::Begin("Editor");
 	std::vector<CombineInfo>& v_CombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
@@ -151,7 +154,6 @@ void MainLayer::OnUIRender()
 			break;
 		}
 	}
-
 	ImGui::End();
 
 	ImGui::Begin("Load Options");
@@ -210,6 +212,15 @@ void MainLayer::OnUIRender()
 
 	if (s_IsLoadDisabled)
 		ImGui::EndDisabled();
+
+	ImGui::End();
+
+	ImGui::Begin("Autosave");
+	if (!autoSaveThreadRunning) {
+		autoSaveThreadRunning = true;
+		std::thread v_AutoSaveWorker(AutoSaveOperation, std::ref(v_CombineInfos), std::ref(startTime), std::ref(endTime), std::ref(autoSaveThreadRunning));
+		v_AutoSaveWorker.detach();
+	}
 
 	ImGui::End();
 

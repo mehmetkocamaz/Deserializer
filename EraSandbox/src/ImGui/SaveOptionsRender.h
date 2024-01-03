@@ -216,11 +216,12 @@ namespace ApplicationUtils
 		int32_t day = localTime->tm_mday;
 		int32_t hour = localTime->tm_hour;
 		int32_t minute = localTime->tm_min;
-		v_FileName = "AUTOSAVE[" + std::to_string(month) + "/" + std::to_string(day) + "/" + std::to_string(year) + "/" + std::to_string(hour) + " : " + std::to_string(minute) + "]";
+		v_FileName = "AUTOSAVE[" + std::to_string(month) + "-" + std::to_string(day) + "-" + std::to_string(year) + "_" + std::to_string(hour) + "-" + std::to_string(minute) + "].ERA";
 	}
 
 	void AutoSaveDirectoryInit() {
-		const char* autoSaveDirectoryPath = "C:\\Users\\kocam\\AppData\\Roaming";
+		//const char* autoSaveDirectoryPath = "C:\\Users\\kocam\\AppData\\Roaming";
+		const char* autoSaveDirectoryPath = "C:";
 		const char* eraPath = "\\ERA";
 		std::string fullEraPath = autoSaveDirectoryPath + std::string(eraPath);
 		int result = _mkdir(fullEraPath.c_str());
@@ -232,30 +233,23 @@ namespace ApplicationUtils
 			//ImGui::Text("Directory cannot created!");
 	}
 
-	void AutoSaveOperation(std::vector<CombineInfo>& v_CombineInfos, std::chrono::time_point < std::chrono::steady_clock>& s_StartTime, std::chrono::time_point < std::chrono::steady_clock>& s_EndTime, bool& s_AutoSaveThreadRunning) {
-
-		AutoSaveDirectoryInit();
-		if (s_StartTime == s_EndTime) {
-			s_AutoSaveThreadRunning = true;
+	void AutoSaveOperation(std::vector<CombineInfo>& v_CombineInfos, std::chrono::time_point < std::chrono::steady_clock> v_StartTime, std::chrono::time_point < std::chrono::steady_clock> s_EndTime, bool& s_AutoSaveThreadRunning) 
+	{
+			AutoSaveDirectoryInit();
 			const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
 			strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
 			time_t now = time(0);
 			std::string fileName;
 			AutoSaveFilenameInit(now, fileName);
-			s_FileAutoSaveOptions.m_XorValue = 22012001;
 			strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
-
+			//s_FileAutoSaveOptions.m_ArtifactCheck = true;
+			//s_FileAutoSaveOptions.m_ArtifactSelected = ArtifactType::BINARY;
 			SerializeSpec spec{};
 			spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
 			spec.m_CombineInfos = &v_CombineInfos;
 			SerializerManager serializerManager(spec);
 			serializerManager.Serialize();
 			serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
-			s_StartTime = std::chrono::steady_clock::now();
-			s_EndTime = s_StartTime + std::chrono::minutes(2);
-		}
-		else
-			s_AutoSaveThreadRunning = false;
 	}
 
 

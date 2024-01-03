@@ -10,10 +10,11 @@ using namespace ApplicationUtils;
 
 void MainLayer::OnUIRender() 
 {
+
 	static bool saveThreadRunning = false;
 	static bool loadThreadRunning = false;
 	static bool autoSaveThreadRunning = false;
-	static auto startTime = std::chrono::steady_clock::now();
+	auto startTime = std::chrono::steady_clock::now();
 	static auto endTime = startTime + std::chrono::minutes(2);
 
 	ImGui::Begin("Editor");
@@ -216,10 +217,15 @@ void MainLayer::OnUIRender()
 	ImGui::End();
 
 	ImGui::Begin("Autosave");
-	if (!autoSaveThreadRunning) {
+	if (startTime >= endTime) {
 		autoSaveThreadRunning = true;
-		std::thread v_AutoSaveWorker(AutoSaveOperation, std::ref(v_CombineInfos), std::ref(startTime), std::ref(endTime), std::ref(autoSaveThreadRunning));
+	}
+	if (autoSaveThreadRunning) {
+		std::thread v_AutoSaveWorker(AutoSaveOperation, std::ref(v_CombineInfos), startTime, endTime, std::ref(autoSaveThreadRunning));
 		v_AutoSaveWorker.detach();
+		autoSaveThreadRunning = false;
+		startTime = std::chrono::steady_clock::now();
+		endTime = startTime + std::chrono::minutes(2);
 	}
 
 	ImGui::End();

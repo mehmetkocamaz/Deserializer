@@ -3,6 +3,7 @@
 #include "Application/CombineInfoRoot.h"
 #include <format>
 #include "SerializeManager/SerializeManager.h"
+#include "Editor/InputValidator/CombineInfoValidator.h"
 #include <Windows.h>
 #include <chrono>
 #include <thread>
@@ -29,7 +30,6 @@ namespace ApplicationUtils {
 	void ShowcaseInit(std::vector<CombineInfo>& v_CombineInfos, int32_t openedCombineInfoIndex);
 	//void SaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& saveThreadRunning, std::string& serializationTypeStatus, std::string& binarySerializationStatus, std::string& saveOptionsStatus, std::string& saveStatus, int32_t& inputBufferSize);
 
-
 	void CombineInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator) {
 		bool isCombineInfoOpen = true;
 		char combineInfoTabName[16];
@@ -50,7 +50,9 @@ namespace ApplicationUtils {
 				}
 
 				ImGui::Text("%s", combineInfoTabName);
-				ImGui::InputScalar("Target Item Id", ImGuiDataType_U32, &v_CombineInfo[combineInfoIterator].GetTargetItemIdRef(), NULL, NULL, "%u");
+				uint32_t before = v_CombineInfo[combineInfoIterator].GetTargetItemIdRef();
+				ImGuiUtils::ValidatedInputScalar(E_InputType::TargetItemId, "Target Item Id", ImGuiDataType_U32, &v_CombineInfo[combineInfoIterator].GetTargetItemIdRef(), NULL, NULL, "%u");
+
 				if (ImGui::BeginTabBar("CombineCriteriaTabBar", tab_bar_flags)) {
 
 					if (combineCriteriaTrailing)
@@ -174,8 +176,7 @@ namespace ApplicationUtils {
 				if (ImGui::BeginTabItem(sourceCriteriaName, &isSourceCriteriaOpen, ImGuiTabItemFlags_None))
 				{
 					ImGui::NewLine();
-				
-					ImGui::InputScalar("Source Item Id", ImGuiDataType_U32, &v_SourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef(), NULL, NULL, "%u");
+					ImGuiUtils::ValidatedInputScalar(E_InputType::SourceItemId, "Source Item Id", ImGuiDataType_U32, &v_SourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef(), NULL, NULL, "%u");
 					ImGui::NewLine();
 					if (ImGui::BeginTabBar("SourceCriteriaExtensiveTabBar",tab_bar_flags3))
 					{
@@ -261,6 +262,7 @@ namespace ApplicationUtils {
 				}
 				char requirementValueName[30];
 				snprintf(requirementValueName, IM_ARRAYSIZE(requirementValueName), "%d %s", targetRequirementInfoIterator + 1, "Requirement Value");
+				//ImGuiUtils::ValidatedInputScalar(E_InputType::SourceItemId, requirementValueName, ImGuiDataType_U32, &v_SourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef(), NULL, NULL, "%u");
 				ImGui::InputScalar(requirementValueName, ImGuiDataType_U32, &v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef()[targetRequirementInfoIterator].m_RequirementValue, NULL, NULL, "%u");
 
 				if (ImGui::Button(removeTargetRequirementName))

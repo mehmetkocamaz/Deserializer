@@ -10,7 +10,7 @@ using namespace ApplicationUtils;
 
 void MainLayer::OnAttach() {
 	bool autoSaveCheckBox = false;
-	std::thread v_AutoSaveWorker(&ApplicationUtils::AutoSaveOperation, std::ref(m_CombineCriterias), std::ref(m_AutoSaveCheck), std::ref(m_IsModified));
+	std::thread v_AutoSaveWorker(&ApplicationUtils::AutoSaveOperation, std::ref(m_AutoSaveCheck));
 	v_AutoSaveWorker.detach();
 }
 
@@ -26,7 +26,6 @@ void MainLayer::OnUIRender()
 
 	ImGui::Begin("Editor");
 	std::vector<CombineInfo>& v_CombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
-	SetCombineInfos(&v_CombineInfos);
 
 	if (v_CombineInfos.size() == 0) {
 		CombineInfo combineInfo;

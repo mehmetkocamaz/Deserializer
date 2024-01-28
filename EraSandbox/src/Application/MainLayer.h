@@ -17,7 +17,7 @@ public:
 	bool GetAutoSaveCheck() const { return  m_AutoSaveCheck; }
 	bool& GetAutoSaveCheckRef() { return m_AutoSaveCheck; }
 
-	bool& GetModifyInfoRef() { return m_IsModified; }
+	//bool& GetModifyInfoRef() { return m_IsModified; }
 
 	virtual void OnAttach() override;
 
@@ -33,6 +33,4 @@ private:
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 	float m_LastRenderTime = 0.0f;
 	bool m_AutoSaveCheck = false;
-	std::vector<CombineInfo> m_CombineCriterias;
-	bool m_IsModified = false;
 };

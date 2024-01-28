@@ -7,7 +7,9 @@
 
 //#include <direct.h>
 #include <filesystem>
-namespace fs = std::filesystem;
+namespace fs = std::filesystem; // Namespace kýsaltmasý yapýlmayacak
+
+#include "Application/CombineInfoRoot.h"
 
 
 #include <sys/stat.h>
@@ -212,14 +214,16 @@ namespace ApplicationUtils
 		}
 	}
 
-	void AutoSaveFilenameInit(time_t& v_Now, std::string& v_FileName) {
-		tm* localTime = localtime(&v_Now);
+	std::string AutoSaveFilenameInit() {
+		const time_t now = time(0);
+		tm* localTime = localtime(&now);
 		int32_t year = localTime->tm_year + 1900;
 		int32_t month = localTime->tm_mon + 1;
 		int32_t day = localTime->tm_mday;
 		int32_t hour = localTime->tm_hour;
 		int32_t minute = localTime->tm_min;
-		v_FileName = "AUTOSAVE[" + std::to_string(month) + "-" + std::to_string(day) + "-" + std::to_string(year) + "_" + std::to_string(hour) + "-" + std::to_string(minute) + "].ERA";
+
+		return std::format("AUTOSAVE[{:02}-{:02}-{:4}_{:02}-{:02}].ERA", month, day, year, hour, minute);
 	}
 
 	//void AutoSaveDirectoryInit() {
@@ -325,60 +329,54 @@ namespace ApplicationUtils
 		return false;
 	}
 
-	void AutoSaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& v_AutoSaveCheckBox, bool& v_IsModified) {
+	void AutoSaveOperation(bool& v_AutoSaveCheckBox) {
 		int32_t startThreadSec = 5;
-		constexpr int32_t autoSaveMinute = 1;
+		constexpr int32_t autoSaveMinute = 20;
 		std::this_thread::sleep_for(std::chrono::seconds(startThreadSec));
 		int32_t saveCounter = 0;
 		while (true) {
 			auto startTime = std::chrono::steady_clock::now(); 
-			static auto endTime = startTime + std::chrono::minutes(autoSaveMinute);
+			static auto endTime = startTime + std::chrono::seconds(autoSaveMinute);
 			if (v_AutoSaveCheckBox && (startTime >= endTime) && (saveCounter > 0)) {
-				std::vector<CombineInfo> unsavedCombineInfos = ApplicationUtils::GetCombineInfosRef();
+				std::vector<CombineInfo>& unsavedCombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
 				for (int32_t validationIterator = 0; validationIterator < unsavedCombineInfos.size(); validationIterator++) {
 					if (unsavedCombineInfos[validationIterator].GetCombineModifiedInfoRef()) {
 						unsavedCombineInfos[validationIterator].GetCombineModifiedInfoRef() = false;
-						ApplicationUtils::SetCombineInfos(&unsavedCombineInfos);
 						saveCounter++;
-						v_CombineInfos = ApplicationUtils::GetCombineInfosRef();
 						AutoSaveDirectoryInit();
 						const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
 						strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
-						time_t now = time(0);
-						std::string fileName;
-						AutoSaveFilenameInit(now, fileName);
+						const std::string fileName = AutoSaveFilenameInit();
 						strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
 						//s_FileAutoSaveOptions.m_XorFilterCheck = true;
 						//s_FileAutoSaveOptions.m_XorValue = 122;
 						SerializeSpec spec{};
 						spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
-						spec.m_CombineInfos = &v_CombineInfos;
+						spec.m_CombineInfos = &unsavedCombineInfos;
 						SerializerManager serializerManager(spec);
 						serializerManager.Serialize();
 						serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
 					}
 				}
-			endTime = startTime + std::chrono::minutes(autoSaveMinute);
+			endTime = startTime + std::chrono::seconds(autoSaveMinute);
 			}
 			else if ((saveCounter == 0) && v_AutoSaveCheckBox && (startTime >= endTime)) {
 				saveCounter++;
-				v_CombineInfos = ApplicationUtils::GetCombineInfosRef();
+				const std::vector<CombineInfo>& unsavedCombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
 				AutoSaveDirectoryInit();
 				const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
 				strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
-				time_t now = time(0);
-				std::string fileName;
-				AutoSaveFilenameInit(now, fileName);
+				const std::string fileName = AutoSaveFilenameInit();
 				strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
 				//s_FileAutoSaveOptions.m_XorFilterCheck = true;
 				//s_FileAutoSaveOptions.m_XorValue = 122;
 				SerializeSpec spec{};
 				spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
-				spec.m_CombineInfos = &v_CombineInfos;
+				spec.m_CombineInfos = &unsavedCombineInfos;
 				SerializerManager serializerManager(spec);
 				serializerManager.Serialize();
 				serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
-				endTime = startTime + std::chrono::minutes(autoSaveMinute);
+				endTime = startTime + std::chrono::seconds(autoSaveMinute);
 			}
 		}
 	}

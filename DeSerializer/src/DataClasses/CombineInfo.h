@@ -16,10 +16,12 @@ public:
 	std::vector<CombineCriteria> GetCombineCriterias() const { return m_CombineCriterias; }
 	std::vector<CombineCriteria>& GetCombineCriteriasRef() { return m_CombineCriterias; }
 	bool& GetCombineInfoStatusRef() { return m_Status; }
+	bool& GetCombineModifiedInfoRef() { return m_Modified; }
 #pragma endregion
 private:
 	uint32_t m_TargetItemId = 0; // Always default initialize
 	std::vector<CombineCriteria> m_CombineCriterias;
 	bool m_Status = false;
+	bool m_Modified = false;
 };
 

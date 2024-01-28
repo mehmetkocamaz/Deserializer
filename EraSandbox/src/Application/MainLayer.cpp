@@ -8,17 +8,25 @@
 
 using namespace ApplicationUtils;
 
-void MainLayer::OnUIRender() 
+void MainLayer::OnAttach() {
+	bool autoSaveCheckBox = false;
+	std::thread v_AutoSaveWorker(&ApplicationUtils::AutoSaveOperation, std::ref(m_CombineCriterias), std::ref(m_AutoSaveCheck), std::ref(m_IsModified));
+	v_AutoSaveWorker.detach();
+}
+
+void MainLayer::OnUIRender()
 {
 
 	static bool saveThreadRunning = false;
 	static bool loadThreadRunning = false;
 	static bool autoSaveThreadRunning = false;
+	static bool autoSaveCheckBox = false;
 	auto startTime = std::chrono::steady_clock::now();
 	static auto endTime = startTime + std::chrono::minutes(2);
 
 	ImGui::Begin("Editor");
 	std::vector<CombineInfo>& v_CombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
+	SetCombineInfos(&v_CombineInfos);
 
 	if (v_CombineInfos.size() == 0) {
 		CombineInfo combineInfo;
@@ -216,18 +224,25 @@ void MainLayer::OnUIRender()
 
 	ImGui::End();
 
-	ImGui::Begin("Autosave");
-	if (startTime >= endTime) {
-		autoSaveThreadRunning = true;
-	}
-	if (autoSaveThreadRunning) {
-		std::thread v_AutoSaveWorker(AutoSaveOperation, std::ref(v_CombineInfos), startTime, endTime, std::ref(autoSaveThreadRunning));
-		v_AutoSaveWorker.detach();
-		autoSaveThreadRunning = false;
-		startTime = std::chrono::steady_clock::now();
-		endTime = startTime + std::chrono::minutes(2);
-	}
+	//ImGui::Begin("Autosave");
+	//DrawAutoSave(autoSaveCheckBox);
+	//if (startTime >= endTime) {
+	//	autoSaveThreadRunning = true;
+	//}
+	//if (autoSaveThreadRunning && autoSaveCheckBox) {
+	//	std::thread v_AutoSaveWorker(AutoSaveOperation, std::ref(v_CombineInfos), startTime, endTime, std::ref(autoSaveThreadRunning));
+	//	v_AutoSaveWorker.detach();
+	//	autoSaveThreadRunning = false;
+	//	startTime = std::chrono::steady_clock::now();
+	//	endTime = startTime + std::chrono::minutes(2);
+	//}
 
+	//ImGui::End();
+
+	ImGui::Begin("Auto Save");
+	ImGui::Text("Auto Save: ");
+	ImGui::SameLine();
+	ImGui::Checkbox("##autosave", &MainLayer::GetAutoSaveCheckRef());
 	ImGui::End();
 
 

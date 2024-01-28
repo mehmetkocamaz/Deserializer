@@ -8,6 +8,7 @@
 #include <thread>
 
 namespace ApplicationUtils {
+	std::vector<CombineInfo> v_CombineInfos;
 	static int32_t saveProcess = 0;
 	static int32_t combineInfoDisplayIterator = 0;
 	static bool combineCriteriaTrailing = true;
@@ -54,7 +55,11 @@ namespace ApplicationUtils {
 	void SourceProbabilityInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator);
 	void ShowcaseInit(std::vector<CombineInfo>& v_CombineInfos, int32_t openedCombineInfoIndex);
 
+	void SetCombineInfos(std::vector<CombineInfo>* v_CombineInfo) { v_CombineInfos = *v_CombineInfo; }
+	std::vector<CombineInfo>& GetCombineInfosRef() { return v_CombineInfos; }
+
 	void CombineInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator) {
+
 		bool isCombineInfoOpen = true;
 		char combineInfoTabName[16];
 		static ImGuiTabBarFlags tab_bar_flags = /*ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_Reorderable |*/ ImGuiTabBarFlags_TabListPopupButton | ImGuiTabBarFlags_FittingPolicyScroll;
@@ -109,7 +114,10 @@ namespace ApplicationUtils {
 				}
 
 				ImGui::Text("%s", combineInfoTabName);
-				ImGui::InputScalar("Target Item Id", ImGuiDataType_U32, &v_CombineInfo[combineInfoIterator].GetTargetItemIdRef(), NULL, NULL, "%u");
+				uint32_t before = v_CombineInfo[combineInfoIterator].GetTargetItemIdRef();
+				ImGuiUtils::ValidatedInputScalar(E_InputType::TargetItemId, "Target Item Id", ImGuiDataType_U32, &v_CombineInfo[combineInfoIterator].GetTargetItemIdRef(), NULL, NULL, "%u", &v_CombineInfo[combineInfoIterator].GetCombineModifiedInfoRef());
+				//ImGui::InputScalar("Target Item Id", ImGuiDataType_U32, &v_CombineInfo[combineInfoIterator].GetTargetItemIdRef(), NULL, NULL, "%u");
+
 				if (ImGui::BeginTabBar("CombineCriteriaTabBar", tab_bar_flags)) {
 
 					if (combineCriteriaTrailing)
@@ -907,5 +915,4 @@ namespace ApplicationUtils {
 		}
 		ImGui::End();
 	}
-
 }

@@ -5,9 +5,12 @@
 #include <shobjidl.h> 
 #include <cstring>
 
+//#include <direct.h>
+#include <filesystem>
+namespace fs = std::filesystem;
+
 
 #include <sys/stat.h>
-#include <direct.h>
 #include <cstdlib>
 #include <chrono>
 #include <ctime>
@@ -219,43 +222,165 @@ namespace ApplicationUtils
 		v_FileName = "AUTOSAVE[" + std::to_string(month) + "-" + std::to_string(day) + "-" + std::to_string(year) + "_" + std::to_string(hour) + "-" + std::to_string(minute) + "].ERA";
 	}
 
-	void AutoSaveDirectoryInit() {
-		//const char* autoSaveDirectoryPath = "C:\\Users\\kocam\\AppData\\Roaming";
-		const char* autoSaveDirectoryPath = "C:";
-		const char* eraPath = "\\ERA";
-		std::string fullEraPath = autoSaveDirectoryPath + std::string(eraPath);
-		int result = _mkdir(fullEraPath.c_str());
+	//void AutoSaveDirectoryInit() {
+	//	const char* autoSaveDirectoryPath = "C:\\Users\\kocam\\AppData\\Roaming";
+	//	const char* eraPath = "\\ERA";
+	//	std::string fullEraPath = autoSaveDirectoryPath + std::string(eraPath);
+	//	int result = _mkdir(fullEraPath.c_str()); // direct.h
 
-		if (result == 0) {
-			//ImGui::Text("Directory created on %s", fullEraPath.c_str());
-		}
-		//else
-			//ImGui::Text("Directory cannot created!");
-	}
-
-	void AutoSaveOperation(std::vector<CombineInfo>& v_CombineInfos, std::chrono::time_point < std::chrono::steady_clock> v_StartTime, std::chrono::time_point < std::chrono::steady_clock> s_EndTime, bool& s_AutoSaveThreadRunning) 
-	{
-			AutoSaveDirectoryInit();
-			const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
-			strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
-			time_t now = time(0);
-			std::string fileName;
-			AutoSaveFilenameInit(now, fileName);
-			strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
-			//s_FileAutoSaveOptions.m_ArtifactCheck = true;
-			//s_FileAutoSaveOptions.m_ArtifactSelected = ArtifactType::BINARY;
-			SerializeSpec spec{};
-			spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
-			spec.m_CombineInfos = &v_CombineInfos;
-			SerializerManager serializerManager(spec);
-			serializerManager.Serialize();
-			serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
-	}
-
-
-	//void DrawAutoSave() {
-	//	
+	//	//if (result == 0) {
+	//	//	ImGui::Text("Directory created on %s", fullEraPath.c_str());
+	//	//}
+	//	//else
+	//	//	ImGui::Text("Directory cannot created!");
 	//}
 
+	void AutoSaveDirectoryInit() {
+		const char* autoSaveDirectoryPath = "C:\\Users\\kocam\\AppData\\Roaming";
+		const char* eraPath = "\\ERA";
+		std::string fullEraPath = autoSaveDirectoryPath + std::string(eraPath);
+		if (fs::exists(fullEraPath))
+			std::cout << "File Already Exist!" << std::endl;
+		else {
+			try
+			{
+				fs::create_directory(fullEraPath);
+			}
+			catch (const std::filesystem::filesystem_error& ex)
+			{
+				std::cerr << "Error creating directory : " << ex.what() << std::endl;
+			}
+		}
+	}
+
+	bool AutoSaveValidator(std::vector<CombineInfo>& savedCombineInfos, std::vector<CombineInfo>& unsavedCombineInfos) {
+		if (unsavedCombineInfos.size() == 0)
+			return false; // false for new save is NOT required.
+
+		if (savedCombineInfos.size() == 0 || (savedCombineInfos.size() != unsavedCombineInfos.size()))
+			return true; // true for new save required.
+
+
+		for (int32_t combineInfoIterator = 0; combineInfoIterator < savedCombineInfos.size(); combineInfoIterator++) {
+			if ((savedCombineInfos[combineInfoIterator].GetTargetItemIdRef() != unsavedCombineInfos[combineInfoIterator].GetTargetItemIdRef()) || (savedCombineInfos[combineInfoIterator].GetCombineCriteriasRef().size() != unsavedCombineInfos[combineInfoIterator].GetCombineCriteriasRef().size()))
+				return true;
+
+			std::vector<CombineCriteria>& v_SavedCriterias = savedCombineInfos[combineInfoIterator].GetCombineCriteriasRef();
+			std::vector<CombineCriteria>& v_UnsavedCriterias = unsavedCombineInfos[combineInfoIterator].GetCombineCriteriasRef();
+			
+			for (int32_t criteriaIterator = 0; criteriaIterator < v_SavedCriterias.size(); criteriaIterator++) {
+				if ((v_SavedCriterias[criteriaIterator].GetTargetRequirementInfoRef().size() != v_UnsavedCriterias[criteriaIterator].GetTargetRequirementInfoRef().size()) || (v_SavedCriterias[criteriaIterator].GetSourceCriteriasRef().size() != v_UnsavedCriterias[criteriaIterator].GetSourceCriteriasRef().size()))
+					return true;
+			
+				std::vector<RequirementInfo>& v_SavedTargetRequirement = v_SavedCriterias[criteriaIterator].GetTargetRequirementInfoRef();
+				std::vector<RequirementInfo>& v_UnsavedTargetRequirement = v_UnsavedCriterias[criteriaIterator].GetTargetRequirementInfoRef();
+			
+				for (int32_t targetRequirementIterator = 0; targetRequirementIterator < v_SavedTargetRequirement.size(); targetRequirementIterator++) {
+					if (v_SavedTargetRequirement[targetRequirementIterator].GetRequirementTypeRef() != v_UnsavedTargetRequirement[targetRequirementIterator].GetRequirementTypeRef())
+						return true;
+					if (v_SavedTargetRequirement[targetRequirementIterator].GetRequirementValueRef() != v_UnsavedTargetRequirement[targetRequirementIterator].GetRequirementValueRef())
+						return true;
+				}
+				
+				std::vector<SourceCriteria>& v_SavedSourceCriterias = v_SavedCriterias[criteriaIterator].GetSourceCriteriasRef();
+				std::vector<SourceCriteria>& v_UnsavedSourceCriterias = v_UnsavedCriterias[criteriaIterator].GetSourceCriteriasRef();
+
+				for (int32_t sourceCriteriaIterator = 0; sourceCriteriaIterator < v_SavedSourceCriterias.size(); sourceCriteriaIterator++) {
+					if (v_SavedSourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef() != v_UnsavedSourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef())
+						return true;
+					if (v_SavedSourceCriterias[sourceCriteriaIterator].GetCostInfosRef().size() != v_UnsavedSourceCriterias[sourceCriteriaIterator].GetCostInfosRef().size())
+						return true;
+					if (v_SavedSourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef().size() != v_UnsavedSourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef().size())
+						return true;
+					
+					std::vector<ProbabilityInfo>& v_SavedProbabilities = v_SavedSourceCriterias[sourceCriteriaIterator].GetProbabilityInfosRef();
+					std::vector<ProbabilityInfo>& v_UnsavedProbabilities = v_UnsavedSourceCriterias[sourceCriteriaIterator].GetProbabilityInfosRef();
+					for (int32_t probabilityIterator = 0; probabilityIterator < v_SavedProbabilities.size(); probabilityIterator++) {
+						if (v_SavedProbabilities[probabilityIterator].GetProbabilityValueRef() != v_UnsavedProbabilities[probabilityIterator].GetProbabilityValueRef())
+							return true;
+						if (v_UnsavedProbabilities[probabilityIterator].GetProbabiltyTypeRef() != v_UnsavedProbabilities[probabilityIterator].GetProbabiltyTypeRef())
+							return true;
+					}
+
+					std::vector<RequirementInfo>& v_SavedSourceRequirement = v_SavedSourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef();
+					std::vector<RequirementInfo>& v_UnsavedSourceRequirement = v_UnsavedSourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef();
+					for (int32_t sourceRequirementIterator = 0; sourceRequirementIterator < v_SavedSourceRequirement.size(); sourceRequirementIterator++) {
+						if (v_SavedSourceRequirement[sourceRequirementIterator].GetRequirementTypeRef() != v_UnsavedSourceRequirement[sourceRequirementIterator].GetRequirementTypeRef())
+							return true;
+						if (v_SavedSourceRequirement[sourceRequirementIterator].GetRequirementValueRef() != v_UnsavedSourceRequirement[sourceRequirementIterator].GetRequirementValueRef())
+							return true;
+					}
+
+					std::vector<CostInfo>& v_SavedCostInfos = v_SavedSourceCriterias[sourceCriteriaIterator].GetCostInfosRef();
+					std::vector<CostInfo>& v_UnsavedCostInfos = v_UnsavedSourceCriterias[sourceCriteriaIterator].GetCostInfosRef();
+					for (int32_t costInfoIterator = 0; costInfoIterator < v_SavedCostInfos.size(); costInfoIterator++) {
+						if (v_SavedCostInfos[costInfoIterator].GetCostTypeRef() != v_UnsavedCostInfos[costInfoIterator].GetCostTypeRef())
+							return true;
+						if (v_SavedCostInfos[costInfoIterator].GetCostValueRef() != v_UnsavedCostInfos[costInfoIterator].GetCostValueRef())
+							return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	void AutoSaveOperation(std::vector<CombineInfo>& v_CombineInfos, bool& v_AutoSaveCheckBox, bool& v_IsModified) {
+		int32_t startThreadSec = 5;
+		constexpr int32_t autoSaveMinute = 1;
+		std::this_thread::sleep_for(std::chrono::seconds(startThreadSec));
+		int32_t saveCounter = 0;
+		while (true) {
+			auto startTime = std::chrono::steady_clock::now(); 
+			static auto endTime = startTime + std::chrono::minutes(autoSaveMinute);
+			if (v_AutoSaveCheckBox && (startTime >= endTime) && (saveCounter > 0)) {
+				std::vector<CombineInfo> unsavedCombineInfos = ApplicationUtils::GetCombineInfosRef();
+				for (int32_t validationIterator = 0; validationIterator < unsavedCombineInfos.size(); validationIterator++) {
+					if (unsavedCombineInfos[validationIterator].GetCombineModifiedInfoRef()) {
+						unsavedCombineInfos[validationIterator].GetCombineModifiedInfoRef() = false;
+						ApplicationUtils::SetCombineInfos(&unsavedCombineInfos);
+						saveCounter++;
+						v_CombineInfos = ApplicationUtils::GetCombineInfosRef();
+						AutoSaveDirectoryInit();
+						const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
+						strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
+						time_t now = time(0);
+						std::string fileName;
+						AutoSaveFilenameInit(now, fileName);
+						strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
+						//s_FileAutoSaveOptions.m_XorFilterCheck = true;
+						//s_FileAutoSaveOptions.m_XorValue = 122;
+						SerializeSpec spec{};
+						spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
+						spec.m_CombineInfos = &v_CombineInfos;
+						SerializerManager serializerManager(spec);
+						serializerManager.Serialize();
+						serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
+					}
+				}
+			endTime = startTime + std::chrono::minutes(autoSaveMinute);
+			}
+			else if ((saveCounter == 0) && v_AutoSaveCheckBox && (startTime >= endTime)) {
+				saveCounter++;
+				v_CombineInfos = ApplicationUtils::GetCombineInfosRef();
+				AutoSaveDirectoryInit();
+				const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
+				strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
+				time_t now = time(0);
+				std::string fileName;
+				AutoSaveFilenameInit(now, fileName);
+				strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
+				//s_FileAutoSaveOptions.m_XorFilterCheck = true;
+				//s_FileAutoSaveOptions.m_XorValue = 122;
+				SerializeSpec spec{};
+				spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
+				spec.m_CombineInfos = &v_CombineInfos;
+				SerializerManager serializerManager(spec);
+				serializerManager.Serialize();
+				serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
+				endTime = startTime + std::chrono::minutes(autoSaveMinute);
+			}
+		}
+	}
 
 }

@@ -92,7 +92,6 @@ void MainLayer::OnUIRender()
 	static std::string saveOptionsStatus = "Did not saved yet.";
 	static std::string saveStatus = "Did not saved yet.";
 
-
 	if(ImGui::Button(v_SaveButtonText.c_str()))
 	{
 		if (savePathErrorText.size() > 3) {

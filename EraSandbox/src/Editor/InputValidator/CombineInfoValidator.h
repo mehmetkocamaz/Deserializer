@@ -26,7 +26,13 @@ public:
 		{
 		case E_InputType::TargetItemId: return ValidateTargetItemId(p_Input);
 		case E_InputType::SourceItemId: return ValidateSourceItemId(p_Input);
-
+		case E_InputType::TargetRequirementValue: return ValidateRequirementValue(p_Input);
+		case E_InputType::SourceRequirementValue: return ValidateRequirementValue(p_Input);
+		case E_InputType::SourceProbabilityValue: return ValidateProbabilityValue(p_Input);
+		case E_InputType::SourceCostValue: return ValidateCostValue(p_Input);
+		case E_InputType::TargetRequirementType: return ValidateRequirementType(p_Input);
+		case E_InputType::SourceRequirementType: return ValidateRequirementType(p_Input);
+		//case E_InputType::SourceCostType: return ValidateCostType(p_Input);
 		}
 	}
 private:
@@ -42,6 +48,34 @@ private:
 	ValidatorOutput ValidateSourceItemId(T p_Input)
 	{
 		if (p_Input > 0 && p_Input < 10000)
+			return { .m_Result = true };
+		else
+			return { .m_Result = false, .m_Message = "Error on.." };
+	}
+	template<typename T>
+	ValidatorOutput ValidateRequirementValue(T p_Input) {
+		if (p_Input > 0 && p_Input < 10000)
+			return { .m_Result = true };
+		else
+			return { .m_Result = false, .m_Message = "Error on.." };
+	}	
+	template<typename T>
+	ValidatorOutput ValidateProbabilityValue(T p_Input) {
+		if (p_Input > 0 && p_Input < 10000)
+			return { .m_Result = true };
+		else
+			return { .m_Result = false, .m_Message = "Error on.." };
+	}
+	template<typename T>
+	ValidatorOutput ValidateCostValue(T p_Input) {
+		if (p_Input > 0 && p_Input < 10000)
+			return { .m_Result = true };
+		else
+			return { .m_Result = false, .m_Message = "Error on.." };
+	}
+	template<typename T>
+	ValidatorOutput ValidateRequirementType(T p_Input) {
+		if (p_Input != 4)
 			return { .m_Result = true };
 		else
 			return { .m_Result = false, .m_Message = "Error on.." };

@@ -60,7 +60,40 @@ namespace ImGuiUtils
 			ImGui::TextColored(imDarkGreen, pp_Label);
 		}
 	}
+	
+	static void ValidatedCombo(E_InputType p_InputType, const char* pp_Label, int32_t* pp_CurrentItem, const char* const pp_Items[], int32_t p_ItemsCount, int32_t p_HeightInItems, bool* pp_IsModified, bool* p_SelectedItems, int32_t p_SelectedCount) {
 
-
-
+		int32_t v_TempData = *pp_CurrentItem;
+		bool v_Possible = true;
+		if (ImGui::Combo(std::format("##{}", pp_Label).c_str(), &v_TempData, pp_Items, p_ItemsCount)) {
+			const ValidatorOutput& v_Output = CombineInfoValidator::Instance().Validate(p_InputType, v_TempData);
+			if (v_Output.m_Result) {
+				if (*pp_CurrentItem != v_TempData) {
+					*pp_CurrentItem = v_TempData;
+					*pp_IsModified = true;
+					if (p_SelectedItems[*pp_CurrentItem] == true) {
+						switch (p_InputType)
+						{
+						case E_InputType::TargetRequirementType: *pp_CurrentItem = (int32_t)Enum_Requirement::None; break;
+						case E_InputType::SourceRequirementType: *pp_CurrentItem = (int32_t)Enum_Requirement::None; break;
+						default:
+							break;
+						}
+					}
+					else
+						p_SelectedItems[*pp_CurrentItem] = true;
+				}
+			}
+			else {
+				*pp_CurrentItem = v_TempData;
+				ImGui::SameLine();
+				ImGui::TextColored(imDarkRed, std::format("! {} !", pp_Label).c_str());
+				v_Possible = false;
+			}
+		}
+		if (v_Possible) {
+			ImGui::SameLine();
+			ImGui::TextColored(imDarkGreen, pp_Label);
+		}
+	}
 }

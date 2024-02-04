@@ -226,19 +226,6 @@ namespace ApplicationUtils
 		return std::format("AUTOSAVE[{:02}-{:02}-{:4}_{:02}-{:02}].ERA", month, day, year, hour, minute);
 	}
 
-	//void AutoSaveDirectoryInit() {
-	//	const char* autoSaveDirectoryPath = "C:\\Users\\kocam\\AppData\\Roaming";
-	//	const char* eraPath = "\\ERA";
-	//	std::string fullEraPath = autoSaveDirectoryPath + std::string(eraPath);
-	//	int result = _mkdir(fullEraPath.c_str()); // direct.h
-
-	//	//if (result == 0) {
-	//	//	ImGui::Text("Directory created on %s", fullEraPath.c_str());
-	//	//}
-	//	//else
-	//	//	ImGui::Text("Directory cannot created!");
-	//}
-
 	void AutoSaveDirectoryInit() {
 		const char* autoSaveDirectoryPath = "C:\\Users\\kocam\\AppData\\Roaming";
 		const char* eraPath = "\\ERA";
@@ -331,54 +318,69 @@ namespace ApplicationUtils
 
 	void AutoSaveOperation(bool& v_AutoSaveCheckBox) {
 		int32_t startThreadSec = 5;
-		constexpr int32_t autoSaveMinute = 20;
+		constexpr int32_t autoSaveSeconds = 60;
 		std::this_thread::sleep_for(std::chrono::seconds(startThreadSec));
 		int32_t saveCounter = 0;
+		std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+		std::chrono::time_point endTime = startTime + std::chrono::seconds(autoSaveSeconds);
 		while (true) {
-			auto startTime = std::chrono::steady_clock::now(); 
-			static auto endTime = startTime + std::chrono::seconds(autoSaveMinute);
+			startTime = std::chrono::steady_clock::now();
 			if (v_AutoSaveCheckBox && (startTime >= endTime) && (saveCounter > 0)) {
+				std::vector<CombineInfo>& unsavedCombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
+				std::vector<int32_t> modifiedIndexes;
+				for (int32_t validationIterator = 0; validationIterator < unsavedCombineInfos.size(); validationIterator++) {
+					if (unsavedCombineInfos[validationIterator].GetCombineModifiedInfoRef()) {
+						modifiedIndexes.push_back(validationIterator);
+						unsavedCombineInfos[validationIterator].GetCombineModifiedInfoRef() = false;
+					}
+				}
+				if (modifiedIndexes.size() > 0) {
+					saveCounter = saveCounter + modifiedIndexes.size();
+					AutoSaveDirectoryInit();
+					const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
+					strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
+					const std::string fileName = AutoSaveFilenameInit();
+					strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
+					//s_FileAutoSaveOptions.m_XorFilterCheck = true;
+					//s_FileAutoSaveOptions.m_XorValue = 122;
+					SerializeSpec spec{};
+					spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
+					spec.m_CombineInfos = &unsavedCombineInfos;
+					SerializerManager serializerManager(spec);
+					serializerManager.Serialize();
+					serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
+				}
+				modifiedIndexes.clear();
+				endTime = startTime + std::chrono::seconds(autoSaveSeconds);
+			}
+			else if ((saveCounter == 0) && v_AutoSaveCheckBox && (startTime >= endTime)) {
+				std::vector<int32_t> modifiedIndexes;
 				std::vector<CombineInfo>& unsavedCombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
 				for (int32_t validationIterator = 0; validationIterator < unsavedCombineInfos.size(); validationIterator++) {
 					if (unsavedCombineInfos[validationIterator].GetCombineModifiedInfoRef()) {
+						modifiedIndexes.push_back(validationIterator);
 						unsavedCombineInfos[validationIterator].GetCombineModifiedInfoRef() = false;
-						saveCounter++;
-						AutoSaveDirectoryInit();
-						const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
-						strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
-						const std::string fileName = AutoSaveFilenameInit();
-						strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
-						//s_FileAutoSaveOptions.m_XorFilterCheck = true;
-						//s_FileAutoSaveOptions.m_XorValue = 122;
-						SerializeSpec spec{};
-						spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
-						spec.m_CombineInfos = &unsavedCombineInfos;
-						SerializerManager serializerManager(spec);
-						serializerManager.Serialize();
-						serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
 					}
 				}
-			endTime = startTime + std::chrono::seconds(autoSaveMinute);
-			}
-			else if ((saveCounter == 0) && v_AutoSaveCheckBox && (startTime >= endTime)) {
-				saveCounter++;
-				const std::vector<CombineInfo>& unsavedCombineInfos = CombineInfoRoot::Instance().m_CombineInfos;
-				AutoSaveDirectoryInit();
-				const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
-				strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
-				const std::string fileName = AutoSaveFilenameInit();
-				strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
-				//s_FileAutoSaveOptions.m_XorFilterCheck = true;
-				//s_FileAutoSaveOptions.m_XorValue = 122;
-				SerializeSpec spec{};
-				spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
-				spec.m_CombineInfos = &unsavedCombineInfos;
-				SerializerManager serializerManager(spec);
-				serializerManager.Serialize();
-				serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
-				endTime = startTime + std::chrono::seconds(autoSaveMinute);
+				if (modifiedIndexes.size() > 0) {
+					saveCounter = saveCounter + modifiedIndexes.size();
+					AutoSaveDirectoryInit();
+					const char* savePath = "C:\\Users\\kocam\\AppData\\Roaming\\ERA";
+					strcpy(s_FileAutoSaveOptions.m_InputBuffer, savePath);
+					const std::string fileName = AutoSaveFilenameInit();
+					strcpy(s_FileAutoSaveOptions.m_FileNameBuffer, fileName.c_str());
+					//s_FileAutoSaveOptions.m_XorFilterCheck = true;
+					//s_FileAutoSaveOptions.m_XorValue = 122;
+					SerializeSpec spec{};
+					spec.m_ContentType = Enum_SerizalizeContentType::BINARY;
+					spec.m_CombineInfos = &unsavedCombineInfos;
+					SerializerManager serializerManager(spec);
+					serializerManager.Serialize();
+					serializerManager.ProcessForSave(s_FileAutoSaveOptions.TranspileToSaveOptions());
+					modifiedIndexes.clear();
+					endTime = startTime + std::chrono::seconds(autoSaveSeconds);
+				}
 			}
 		}
 	}
-
 }

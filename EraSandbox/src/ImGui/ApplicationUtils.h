@@ -254,6 +254,7 @@ namespace ApplicationUtils {
 			combineCriteriaIterator++;
 		}
 	}
+
 	void SourceCriteriaCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator) {
 		
 		static ImGuiTabBarFlags tab_bar_flags3 = ImGuiTabBarFlags_TabListPopupButton | ImGuiTabBarFlags_FittingPolicyScroll;
@@ -306,8 +307,9 @@ namespace ApplicationUtils {
 						}
 					}
 					ImGui::NewLine();
-				
-					ImGui::InputScalar("Source Item Id", ImGuiDataType_U32, &v_SourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef(), NULL, NULL, "%u");
+
+					ImGuiUtils::ValidatedInputScalar(E_InputType::SourceItemId, "Source Item Id", ImGuiDataType_U32, &v_SourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef(), NULL, NULL, "%u", &v_CombineInfo[combineInfoIterator].GetCombineModifiedInfoRef());
+					//ImGui::InputScalar("Source Item Id", ImGuiDataType_U32, &v_SourceCriterias[sourceCriteriaIterator].GetSourceItemIdRef(), NULL, NULL, "%u");
 					ImGui::NewLine();
 					if (ImGui::BeginTabBar("SourceCriteriaExtensiveTabBar",tab_bar_flags3))
 					{
@@ -357,6 +359,7 @@ namespace ApplicationUtils {
 			sourceCriteriaIterator++;
 		}
 	}
+
 	void TargetRequirementInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator) 
 	{
 		std::vector<RequirementInfo>& v_TargetRequirementInfos = v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetTargetRequirementInfoRef();
@@ -432,7 +435,8 @@ namespace ApplicationUtils {
 				}
 				char requirementValueName[30];
 				snprintf(requirementValueName, IM_ARRAYSIZE(requirementValueName), "%d %s", targetRequirementInfoIterator + 1, "Requirement Value");
-				ImGui::InputScalar(requirementValueName, ImGuiDataType_U32, &v_TargetRequirementInfos[targetRequirementInfoIterator].m_RequirementValue, NULL, NULL, "%u");
+				ImGuiUtils::ValidatedInputScalar(E_InputType::TargetRequirementValue, requirementValueName, ImGuiDataType_U32, &v_TargetRequirementInfos[targetRequirementInfoIterator].m_RequirementValue, NULL, NULL, "%u", &v_CombineInfo[combineInfoIterator].GetCombineModifiedInfoRef());
+				//ImGui::InputScalar(requirementValueName, ImGuiDataType_U32, &v_TargetRequirementInfos[targetRequirementInfoIterator].m_RequirementValue, NULL, NULL, "%u");
 
 				if (ImGui::Button(removeTargetRequirementName))
 				{
@@ -451,8 +455,13 @@ namespace ApplicationUtils {
 
 	void SourceRequirementInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator) 
 	{
+		
 		bool isSourceRequirementOpen = true;
 		std::vector<RequirementInfo>& v_SourceRequirementInfos = v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef();
+
+
+
+			
 
 		if (ImGui::BeginTabItem("Source Requirements", NULL, ImGuiTabItemFlags_None))
 		{
@@ -510,32 +519,49 @@ namespace ApplicationUtils {
 
 			for (int32_t sourceRequiremenIterator = 0; sourceRequiremenIterator < v_SourceRequirementInfos.size();)
 			{
+				constexpr int32_t bufferSize = 5;
+				//bool selectedBuffer[bufferSize] = { false,false,false,false,false };
+
+				bool* selectedBuffer = new bool[bufferSize];
+				for (int32_t selectedItemIterator = 0; selectedItemIterator < bufferSize; selectedItemIterator++) {
+					selectedBuffer[selectedItemIterator] = false;
+				}
+				for (int32_t selectedBufferIterator = 0; selectedBufferIterator < v_SourceCriterias[sourceCriteriaIterator].GetSourceRequirementInfosRef().size(); selectedBufferIterator++) {
+					switch (v_SourceRequirementInfos[selectedBufferIterator].m_RequirementType)
+					{
+					case Enum_Requirement::Enchanment: selectedBuffer[0] = true;
+						break;
+					case Enum_Requirement::Combine: selectedBuffer[1] = true;
+						break;
+					case Enum_Requirement::Refine: selectedBuffer[2] = true;
+						break;
+					case Enum_Requirement::Socket: selectedBuffer[3] = true;
+						break;
+					default:
+						selectedBuffer[sourceRequiremenIterator] = false;
+						break;
+					}
+				}
 				ImGui::Text("\n");
 				snprintf(comboName, IM_ARRAYSIZE(comboName), "%d %s", sourceRequiremenIterator + 1, "Requirement Type");
 				snprintf(removeSourceRequirementName, IM_ARRAYSIZE(removeSourceRequirementName), "%s %d", "Remove Index", sourceRequiremenIterator + 1);
-				if (ImGui::Combo(comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetSourceRequirementInfosRef()[sourceRequiremenIterator].m_RequirementType, buffer, IM_ARRAYSIZE(buffer))) 
-				{
-					for (int32_t comboIterator = 0; comboIterator < v_SourceRequirementInfos.size(); comboIterator++)
-					{
-						RequirementInfo& v_SourceRequirementInfo = v_SourceRequirementInfos[comboIterator];
-						if (v_SourceRequirementInfo.m_RequirementType == v_SourceRequirementInfos[sourceRequiremenIterator].m_RequirementType && (comboIterator != sourceRequiremenIterator))
-						{
-							if (v_SourceRequirementInfo.m_RequirementType != Enum_Requirement::None)
-								v_SourceRequirementInfo.m_RequirementType = Enum_Requirement::None;
-						}
-					}
-				}
+				ImGuiUtils::ValidatedCombo(E_InputType::SourceRequirementType, comboName, (int32_t*)&v_CombineInfo[combineInfoIterator].GetCombineCriteriasRef()[combineCriteriaIterator].GetSourceCriteriasRef()[sourceCriteriaIterator].GetSourceRequirementInfosRef()[sourceRequiremenIterator].m_RequirementType, buffer, IM_ARRAYSIZE(buffer), NULL, &v_CombineInfo[combineInfoIterator].GetCombineModifiedInfoRef(), selectedBuffer, IM_ARRAYSIZE(selectedBuffer));
+				
 				char requirementValueName[30];
 				snprintf(requirementValueName, IM_ARRAYSIZE(requirementValueName), "%d %s", sourceRequiremenIterator + 1, "Requirement Value");
-				ImGui::InputScalar(requirementValueName, ImGuiDataType_U32, &v_SourceRequirementInfos[sourceRequiremenIterator].m_RequirementValue, NULL, NULL, "%u");
+				
+				ImGuiUtils::ValidatedInputScalar(E_InputType::SourceRequirementValue, requirementValueName, ImGuiDataType_U32, &v_SourceRequirementInfos[sourceRequiremenIterator].m_RequirementValue, NULL, NULL, "%u", &v_CombineInfo[combineInfoIterator].GetCombineModifiedInfoRef());
+				//ImGui::InputScalar(requirementValueName, ImGuiDataType_U32, &v_SourceRequirementInfos[sourceRequiremenIterator].m_RequirementValue, NULL, NULL, "%u");
 
 				if (ImGui::Button(removeSourceRequirementName))
 				{
 					v_SourceRequirementInfos.erase(v_SourceRequirementInfos.begin() + sourceRequiremenIterator);
 				}
 
-				if (!isSourceRequirementOpen)
+				if (!isSourceRequirementOpen) {
 					v_SourceRequirementInfos.erase(v_SourceRequirementInfos.begin() + sourceRequiremenIterator);
+					delete[] selectedBuffer;
+				}
 				else
 					sourceRequiremenIterator++;
 			}
@@ -621,7 +647,10 @@ namespace ApplicationUtils {
 				char costValueName[30];
 				snprintf(costValueName, IM_ARRAYSIZE(costValueName), "%d %s", costInfoIterator + 1, "Cost Value");
 				snprintf(removeSourceCostName, IM_ARRAYSIZE(removeSourceCostName), "%s %d", "Remove Index", costInfoIterator + 1);
-				ImGui::InputScalar(costValueName, ImGuiDataType_U32, &v_CostInfos[costInfoIterator].m_CostValue, NULL, NULL, "%u");
+
+				ImGuiUtils::ValidatedInputScalar(E_InputType::SourceCostValue, costValueName, ImGuiDataType_U32, &v_CostInfos[costInfoIterator].m_CostValue, NULL, NULL, "%u", &v_CombineInfo[combineInfoIterator].GetCombineModifiedInfoRef());
+				//ImGui::InputScalar(costValueName, ImGuiDataType_U32, &v_CostInfos[costInfoIterator].m_CostValue, NULL, NULL, "%u");
+
 				if (ImGui::Button(removeSourceCostName))
 				{
 					v_CostInfos.erase(v_CostInfos.begin() + costInfoIterator);
@@ -640,7 +669,7 @@ namespace ApplicationUtils {
 	void SourceProbabilityInfoCreator(std::vector<CombineInfo>& v_CombineInfo, int32_t& combineInfoIterator, int32_t& combineCriteriaIterator, std::vector<SourceCriteria>& v_SourceCriterias, int32_t& sourceCriteriaIterator)
 	{
 		std::vector<ProbabilityInfo>& v_ProbabilityInfos = v_SourceCriterias[sourceCriteriaIterator].GetProbabilityInfosRef();
-		bool isProbabiltyOpen = true;
+		bool isProbabilityOpen = true;
 		if (ImGui::BeginTabItem("Probability Infos", NULL, ImGuiTabItemFlags_None))
 		{
 			if (ImGui::IsItemClicked(1)) {
@@ -682,21 +711,24 @@ namespace ApplicationUtils {
 
 			ImGui::NewLine();
 
-			for (int32_t probabiltyInfoIterator = 0; probabiltyInfoIterator < v_ProbabilityInfos.size();)
+			for (int32_t probabilityInfoIterator = 0; probabilityInfoIterator < v_ProbabilityInfos.size();)
 			{
 				const char* buffer[3] = { "Success" , "Fail" , "Break" };
-				ImGui::BulletText(buffer[probabiltyInfoIterator]);
+				ImGui::BulletText(buffer[probabilityInfoIterator]);
 				char probabilityValueName[30];
-				snprintf(probabilityValueName, IM_ARRAYSIZE(probabilityValueName), "%s %d", "Probability Value", probabiltyInfoIterator + 1);
-				ImGui::InputScalar(probabilityValueName, ImGuiDataType_U32, &v_ProbabilityInfos[probabiltyInfoIterator].m_ProbabilityValue, NULL, NULL, "%u");
-				double overallProbabiltyValues = 0.0f;
+				snprintf(probabilityValueName, IM_ARRAYSIZE(probabilityValueName), "%s %d", "Probability Value", probabilityInfoIterator + 1);
+
+				ImGuiUtils::ValidatedInputScalar(E_InputType::SourceProbabilityValue, probabilityValueName, ImGuiDataType_U32, &v_ProbabilityInfos[probabilityInfoIterator].m_ProbabilityValue, NULL, NULL, "%u", &v_CombineInfo[combineInfoIterator].GetCombineModifiedInfoRef());
+				//ImGui::InputScalar(probabilityValueName, ImGuiDataType_U32, &v_ProbabilityInfos[probabilityInfoIterator].m_ProbabilityValue, NULL, NULL, "%u");
+				
+				double overallProbabilityValues = 0.0f;
 				for (int32_t probabilityRatio = 0; probabilityRatio < v_ProbabilityInfos.size(); probabilityRatio++)
 				{
-					overallProbabiltyValues += v_ProbabilityInfos[probabilityRatio].m_ProbabilityValue;
+					overallProbabilityValues += v_ProbabilityInfos[probabilityRatio].m_ProbabilityValue;
 				}
 				
-				if (overallProbabiltyValues != 0) {
-					ImGui::Text("%f", (v_ProbabilityInfos[probabiltyInfoIterator].m_ProbabilityValue * (100.0f / overallProbabiltyValues)));
+				if (overallProbabilityValues != 0) {
+					ImGui::Text("%f", (v_ProbabilityInfos[probabilityInfoIterator].m_ProbabilityValue * (100.0f / overallProbabilityValues)));
 				}
 				else
 				{
@@ -706,10 +738,10 @@ namespace ApplicationUtils {
 
 				ImGui::NewLine();
 
-				if (!isProbabiltyOpen)
-					v_ProbabilityInfos.erase(v_ProbabilityInfos.begin() + probabiltyInfoIterator);
+				if (!isProbabilityOpen)
+					v_ProbabilityInfos.erase(v_ProbabilityInfos.begin() + probabilityInfoIterator);
 				else
-					probabiltyInfoIterator++;
+					probabilityInfoIterator++;
 			}
 			ImGui::EndTabItem();
 		}

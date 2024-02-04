@@ -76,8 +76,7 @@ namespace ImGuiUtils
 						{
 						case E_InputType::TargetRequirementType: *pp_CurrentItem = (int32_t)Enum_Requirement::None; break;
 						case E_InputType::SourceRequirementType: *pp_CurrentItem = (int32_t)Enum_Requirement::None; break;
-						default:
-							break;
+						case E_InputType::SourceCostType: *pp_CurrentItem = (int32_t)Enum_Cost::None; break;
 						}
 					}
 					else

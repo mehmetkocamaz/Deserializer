@@ -32,7 +32,7 @@ public:
 		case E_InputType::SourceCostValue: return ValidateCostValue(p_Input);
 		case E_InputType::TargetRequirementType: return ValidateRequirementType(p_Input);
 		case E_InputType::SourceRequirementType: return ValidateRequirementType(p_Input);
-		//case E_InputType::SourceCostType: return ValidateCostType(p_Input);
+		case E_InputType::SourceCostType: return ValidateCostType(p_Input);
 		}
 	}
 private:
@@ -75,6 +75,13 @@ private:
 	}
 	template<typename T>
 	ValidatorOutput ValidateRequirementType(T p_Input) {
+		if (p_Input != 4)
+			return { .m_Result = true };
+		else
+			return { .m_Result = false, .m_Message = "Error on.." };
+	}
+	template<typename T>
+	ValidatorOutput ValidateCostType(T p_Input) {
 		if (p_Input != 4)
 			return { .m_Result = true };
 		else

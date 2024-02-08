@@ -31,6 +31,7 @@ private:
 	Enum_SerializationStatus BinarySerialize();
 	std::vector<std::bitset<32>> m_BinaryData;
 	std::vector<uint8_t> m_BinaryDataAsByteArray;
+	//std::vector<uint8_t> m_XorFilteredData;
 	std::vector<uint8_t> m_CompressedData;
 	std::vector<uint8_t> m_DeCompressedData;
 	SerializeSpec m_SerializeSpecification;

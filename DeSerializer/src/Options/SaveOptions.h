@@ -23,6 +23,7 @@ struct SaveOptions
 {
 	Enum_Save m_SaveFlags = E_Default;
 	int32_t m_XorKey = 0;
+	uint32_t m_MagicKey = 0;
 	std::filesystem::path m_FilePath;
 	ArtifactType m_ArtifactType = JSON;
 };

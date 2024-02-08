@@ -30,16 +30,35 @@ Enum_SerializationStatus SerializerManager::ProcessForSave(SaveOptions saveOptio
 		return Enum_SerializationStatus::EMPTY_BUFFER;
 	}
 
-	if (saveOptions.m_SaveFlags & Enum_Save::E_Compress)
+	if (saveOptions.m_SaveFlags & Enum_Save::E_Compress) {
+		saveOptions.m_MagicKey = 0x10000000;
 		if (!Utils::Compress(m_BinaryDataAsByteArray, m_CompressedData))
 		{
 			GetSerializationStatusRef().push_back(Enum_SerializationStatus::COMPRESS_FAIL);
 			return Enum_SerializationStatus::COMPRESS_FAIL;
 		}
+	}
 	
-	if (saveOptions.m_SaveFlags & Enum_Save::E_XorFilter)
-		Utils::ApplyXorFilter(m_CompressedData, saveOptions.m_XorKey);
+	if (saveOptions.m_SaveFlags & Enum_Save::E_XorFilter) {
+		Utils::ApplyXorFilter(m_BinaryDataAsByteArray, saveOptions.m_XorKey);
+		//Utils::ApplyXorFilter(m_CompressedData, saveOptions.m_XorKey);
+		saveOptions.m_MagicKey = saveOptions.m_XorKey;
+	}
+	else
+	{
+		saveOptions.m_MagicKey += 0xABD1108;
+		Utils::ApplyXorFilter(m_BinaryDataAsByteArray, saveOptions.m_MagicKey);
+	}
 
+	if (saveOptions.m_MagicKey != saveOptions.m_XorKey) {
+		saveOptions.m_XorKey = saveOptions.m_MagicKey;
+	}
+	//m_BinaryDataAsByteArray.push_back(saveOptions.m_MagicKey);
+	//m_BinaryData.insert(m_BinaryData.begin(), saveOptions.m_MagicKey);
+	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 24) & 0xFF));
+	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 16) & 0xFF));
+	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 8) & 0xFF));
+	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), (saveOptions.m_MagicKey  & 0xFF));
 	return Save(saveOptions.m_FilePath);
 }
 
@@ -132,8 +151,9 @@ Enum_SerializationStatus SerializerManager::BinarySerialize() {
 	}
 	GetSerializationStatusRef().push_back(Enum_SerializationStatus::SUCCESS);
 	return Enum_SerializationStatus::SUCCESS;
-
 }
+
+
 
 
 //Enum_SerializationStatus SerializerManager::EncryptionTest()

@@ -108,15 +108,22 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 	std::vector<uint8_t> decompressedDataBuffer;
 	uint32_t decompressedBufferSize = 0;
 	size_t offset = 0;
+
 	if (buffer.size() > 4)
 	{
+		int32_t magicKey = 0;
 		Utils::ReadFromBuffer(buffer, decompressedBufferSize, offset);
-		buffer.erase(buffer.begin(), buffer.begin() + 4);
+		Utils::ReadFromBuffer(buffer, m_DeserializeSpecification.m_SaveOptions.m_MagicKey, offset);
+		buffer.erase(buffer.begin(), buffer.begin() + 8);
 	}
 
 	{
 		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_XorFilter)
 			Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_XorKey);
+		else {
+			
+		}
+			//Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_MagicKey);
 
 		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
 		{
@@ -132,63 +139,71 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 	{
 		offset = 0;
 		uint32_t combineInfoSize = 0;
-		Utils::ReadFromBuffer(decompressedDataBuffer,combineInfoSize,offset);
-		for (;offset < decompressedDataBuffer.size();)
+
+		try
 		{
-			CombineInfo combineInfo;
-			Utils::ReadFromBuffer(decompressedDataBuffer, combineInfo.GetTargetItemIdRef(), offset);
-			uint32_t combineCriteriaSize;
-			Utils::ReadFromBuffer(decompressedDataBuffer, combineCriteriaSize, offset);
-			for (int32_t j = 0; j < combineCriteriaSize; j++)
+			Utils::ReadFromBuffer(decompressedDataBuffer, combineInfoSize, offset);
+			for (; offset < decompressedDataBuffer.size();)
 			{
-				CombineCriteria combineCriteria;
-				uint32_t targetRequirementInfoSize;
-
-				Utils::ReadFromBuffer(decompressedDataBuffer, targetRequirementInfoSize, offset);
-				for (int32_t k = 0; k < targetRequirementInfoSize; k++)
+				CombineInfo combineInfo;
+				Utils::ReadFromBuffer(decompressedDataBuffer, combineInfo.GetTargetItemIdRef(), offset);
+				uint32_t combineCriteriaSize;
+				Utils::ReadFromBuffer(decompressedDataBuffer, combineCriteriaSize, offset);
+				for (int32_t j = 0; j < combineCriteriaSize; j++)
 				{
-					RequirementInfo requirementInfo;
-					Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementTypeRef(), offset);
-					Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementValueRef(), offset);
-					combineCriteria.PushTargetRequirementInfo(requirementInfo);
-				}
-				uint32_t sourceCriteriaSize;
-				Utils::ReadFromBuffer(decompressedDataBuffer, sourceCriteriaSize, offset);
-				for (int32_t k = 0; k < sourceCriteriaSize; k++) {
-					SourceCriteria sourceCriteria;
-					Utils::ReadFromBuffer(decompressedDataBuffer, sourceCriteria.GetSourceItemIdRef(), offset);
+					CombineCriteria combineCriteria;
+					uint32_t targetRequirementInfoSize;
 
-					uint32_t costInfoSize;
-					Utils::ReadFromBuffer(decompressedDataBuffer, costInfoSize, offset);
-					for (int32_t m = 0; m < costInfoSize; m++) {
-						CostInfo costInfo;
-						Utils::ReadFromBuffer(decompressedDataBuffer, costInfo.GetCostTypeRef(), offset);
-						Utils::ReadFromBuffer(decompressedDataBuffer, costInfo.GetCostValueRef(), offset);
-						sourceCriteria.SetCostInfo(costInfo);
-					}
-
-					uint32_t probabilityInfoSize;
-					Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfoSize, offset);
-					for (int32_t m = 0; m < probabilityInfoSize; m++) {
-						ProbabilityInfo probabilityInfo;
-						Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfo.GetProbabiltyTypeRef(), offset);
-						Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfo.GetProbabilityValueRef(), offset);
-						sourceCriteria.SetProbabilityInfo(probabilityInfo);
-					}
-
-					uint32_t requirementInfoSize;
-					Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfoSize, offset);
-					for (int32_t m = 0; m < requirementInfoSize; m++) {
+					Utils::ReadFromBuffer(decompressedDataBuffer, targetRequirementInfoSize, offset);
+					for (int32_t k = 0; k < targetRequirementInfoSize; k++)
+					{
 						RequirementInfo requirementInfo;
 						Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementTypeRef(), offset);
 						Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementValueRef(), offset);
-						sourceCriteria.SetSourceRequirementInfo(requirementInfo);
+						combineCriteria.PushTargetRequirementInfo(requirementInfo);
 					}
-					combineCriteria.PushSourceCriterias(sourceCriteria);
+					uint32_t sourceCriteriaSize;
+					Utils::ReadFromBuffer(decompressedDataBuffer, sourceCriteriaSize, offset);
+					for (int32_t k = 0; k < sourceCriteriaSize; k++) {
+						SourceCriteria sourceCriteria;
+						Utils::ReadFromBuffer(decompressedDataBuffer, sourceCriteria.GetSourceItemIdRef(), offset);
+
+						uint32_t costInfoSize;
+						Utils::ReadFromBuffer(decompressedDataBuffer, costInfoSize, offset);
+						for (int32_t m = 0; m < costInfoSize; m++) {
+							CostInfo costInfo;
+							Utils::ReadFromBuffer(decompressedDataBuffer, costInfo.GetCostTypeRef(), offset);
+							Utils::ReadFromBuffer(decompressedDataBuffer, costInfo.GetCostValueRef(), offset);
+							sourceCriteria.SetCostInfo(costInfo);
+						}
+
+						uint32_t probabilityInfoSize;
+						Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfoSize, offset);
+						for (int32_t m = 0; m < probabilityInfoSize; m++) {
+							ProbabilityInfo probabilityInfo;
+							Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfo.GetProbabiltyTypeRef(), offset);
+							Utils::ReadFromBuffer(decompressedDataBuffer, probabilityInfo.GetProbabilityValueRef(), offset);
+							sourceCriteria.SetProbabilityInfo(probabilityInfo);
+						}
+
+						uint32_t requirementInfoSize;
+						Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfoSize, offset);
+						for (int32_t m = 0; m < requirementInfoSize; m++) {
+							RequirementInfo requirementInfo;
+							Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementTypeRef(), offset);
+							Utils::ReadFromBuffer(decompressedDataBuffer, requirementInfo.GetRequirementValueRef(), offset);
+							sourceCriteria.SetSourceRequirementInfo(requirementInfo);
+						}
+						combineCriteria.PushSourceCriterias(sourceCriteria);
+					}
+					combineInfo.PushCombineCriterias(combineCriteria);
 				}
-				combineInfo.PushCombineCriterias(combineCriteria);
+				m_CombineInfos.push_back(combineInfo);
 			}
-			m_CombineInfos.push_back(combineInfo);
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "The error is " << e.what() << std::endl;
 		}
 	}
 
@@ -199,121 +214,3 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 std::vector<CombineInfo> DeserializerManager::GetCombineInfos() const {
 	return m_CombineInfos;
 }
-
-void DeserializerManager::DisplayScreen() const {
-	for (size_t i = 0; i < m_CombineInfos.size(); i++) // LOOP FOR COMBINE INFO VECTOR
-	{
-		std::cout << "------------------------------------------" << std::endl;
-		std::cout << "Combine Info: \n" << "Target Item ID: " << m_CombineInfos.at(i).GetTargetItemId() << std::endl;
-		std::cout << "------------------------------------------" << std::endl;
-		std::cout << "Combine Criterias: " << std::endl;
-		for (size_t j = 0; j < m_CombineInfos.at(i).GetCombineCriterias().size(); j++) // LOOP FOR COMBINE CRITERIA VECTOR
-		{
-			std::cout << "------------------------------------------" << std::endl;
-			std::cout << "Target Requirement Infos: " << std::endl;
-			for (size_t k = 0; k < m_CombineInfos.at(i).GetCombineCriterias().at(j).GetTargetRequirementInfo().size(); k++) // LOOP FOR TARGET REQUIREMENT INFOS
-			{
-				std::cout << "Target Requirement Type: " << static_cast<int>(m_CombineInfos.at(i).GetCombineCriterias().at(j).GetTargetRequirementInfo().at(k).m_RequirementType) << std::endl;
-				std::cout << "Target Requirement Value: " << m_CombineInfos.at(i).GetCombineCriterias().at(j).GetTargetRequirementInfo().at(k).m_RequirementValue << std::endl;
-			}
-			std::cout << "------------------------------------------" << std::endl;
-			std::cout << "Source Criterias: " << std::endl;
-			for (size_t k = 0; k < m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().size(); k++) // LOOP FOR SOURCE CRITERIAS
-			{
-				std::cout << "------------------------------------------" << std::endl;
-				std::cout << "Source Item ID: " << m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().at(k).GetSourceItemId() << std::endl;
-				std::cout << "------------------------------------------" << std::endl;
-				std::cout << "Source Cost Infos: " << std::endl;
-				for (size_t l = 0; l < m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().at(k).GetCostInfos().size(); l++) // LOOP FOR SOURCE COST INFOS
-				{
-					std::cout << "Cost Type: " << static_cast<int>(m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().at(k).GetCostInfos().at(l).m_CostType) << std::endl;
-					std::cout << "Cost Value: " << m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().at(k).GetCostInfos().at(l).m_CostValue << std::endl;
-				}
-				std::cout << "------------------------------------------" << std::endl;
-				std::cout << "Source Requirement Infos: " << std::endl;
-				for (size_t l = 0; l < m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().at(k).GetSourceRequirementInfos().size(); l++) // LOOP FOR SOURCE REQUIREMENT INFOS
-				{
-					std::cout << "Requirement Type: " << static_cast<int>(m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().at(k).GetSourceRequirementInfos().at(l).m_RequirementType) << std::endl;
-					std::cout << "Requirement Value: " << m_CombineInfos.at(i).GetCombineCriterias().at(j).GetSourceCriterias().at(k).GetSourceRequirementInfos().at(l).m_RequirementValue << std::endl;
-				}
-			}
-		}
-	}
-}
-
-
-//void DeserializerManager::ReadUint32_t(const std::vector<std::bitset<32>>& buffer, uint32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
-//	
-//	destination = static_cast<uint32_t>(buffer[offset++].to_ulong());
-//	previousOffset++;
-//}
-//void DeserializerManager::ReadInt32_t(const std::vector<std::bitset<32>>& buffer, int32_t& destination, uint32_t& offset, uint32_t& previousOffset) {
-//	destination = static_cast<int32_t>(buffer[offset++].to_ulong());
-//	previousOffset++;
-//}
-//void DeserializerManager::ReadEnum_Cost(const std::vector<std::bitset<32>>& buffer, Enum_Cost& destination, uint32_t& offset, uint32_t& previousOffset) {
-//	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
-//	switch (temp)
-//	{
-//	case 0:
-//		destination = Enum_Cost::Silver;
-//		break;
-//	case 1:
-//		destination = Enum_Cost::Billion;
-//		break;
-//	case 2:
-//		destination = Enum_Cost::ContributionPoint;
-//		break;
-//	case 3:
-//		destination = Enum_Cost::BloodPoint;
-//		break;
-//	default:
-//		std::cerr << "There is an error about deserializing binary data.";
-//		break;
-//	}
-//	previousOffset++;
-//}
-//
-//void DeserializerManager::ReadEnum_Requirement(const std::vector<std::bitset<32>>& buffer, Enum_Requirement& destination, uint32_t& offset, uint32_t& previousOffset) {
-//	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
-//	switch (temp)
-//	{
-//	case 0:
-//		destination = Enum_Requirement::Enchanment;
-//		break;
-//	case 1:
-//		destination = Enum_Requirement::Combine;
-//		break;
-//	case 2:
-//		destination = Enum_Requirement::Refine;
-//		break;
-//	case 3:
-//		destination = Enum_Requirement::Socket;
-//		break;
-//	default:
-//		std::cerr << "There is an error about deserializing binary data.";
-//		break;
-//	}
-//	previousOffset++;
-//}
-//
-//void DeserializerManager::ReadEnum_Probability(const std::vector<std::bitset<32>>& buffer, Enum_Probability& destination, uint32_t& offset, uint32_t& previousOffset) {
-//	int32_t temp = static_cast<int32_t>(buffer[offset++].to_ulong());
-//	switch (temp)
-//	{
-//	case 0:
-//		destination = Enum_Probability::Success;
-//		break;
-//	case 1:
-//		destination = Enum_Probability::Fail;
-//		break;
-//	case 2:
-//		destination = Enum_Probability::Break;
-//		break;
-//	default:
-//		std::cerr << "There is an error about deserializing binary data.";
-//		break;
-//	}
-//	previousOffset++;
-//}
-

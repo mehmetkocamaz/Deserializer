@@ -127,9 +127,6 @@ namespace ApplicationUtils
 			pfd->Release();
 		}
 	}
-
-
-
 	
 	void DrawLoadOptions(std::string& v_LoadErrorText) {
 		ImGui::Text("Path to Load:");

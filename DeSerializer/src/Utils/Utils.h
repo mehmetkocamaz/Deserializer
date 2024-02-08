@@ -9,7 +9,6 @@
 
 
 namespace Utils {
-
 	template <typename T>
 	static void ReadFromBuffer(const std::vector<uint8_t>& buffer, T& destination, size_t& offset) {
 		static_assert(std::is_pod<T>::value, "Read only supports POD types.");

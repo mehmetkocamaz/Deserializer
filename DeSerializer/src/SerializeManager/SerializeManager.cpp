@@ -32,6 +32,18 @@ Enum_SerializationStatus SerializerManager::ProcessForSave(SaveOptions saveOptio
 
 	if (saveOptions.m_SaveFlags & Enum_Save::E_Compress) {
 		saveOptions.m_MagicKey = 0x10000000;
+		if (!(saveOptions.m_SaveFlags & Enum_Save::E_XorFilter))
+			saveOptions.m_MagicKey += 0xABD1108;
+		else
+			saveOptions.m_MagicKey += saveOptions.m_XorKey;
+	}
+
+	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 24) & 0xFF));
+	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 16) & 0xFF));
+	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 8) & 0xFF));
+	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), (saveOptions.m_MagicKey & 0xFF));
+
+	if (saveOptions.m_SaveFlags & Enum_Save::E_Compress) {
 		if (!Utils::Compress(m_BinaryDataAsByteArray, m_CompressedData))
 		{
 			GetSerializationStatusRef().push_back(Enum_SerializationStatus::COMPRESS_FAIL);
@@ -46,20 +58,18 @@ Enum_SerializationStatus SerializerManager::ProcessForSave(SaveOptions saveOptio
 	}
 	else
 	{
-		saveOptions.m_MagicKey += 0xABD1108;
+		//saveOptions.m_MagicKey += 0xABD1108;
 		Utils::ApplyXorFilter(m_BinaryDataAsByteArray, saveOptions.m_MagicKey);
 	}
 
-	if (saveOptions.m_MagicKey != saveOptions.m_XorKey) {
-		saveOptions.m_XorKey = saveOptions.m_MagicKey;
-	}
-	//m_BinaryDataAsByteArray.push_back(saveOptions.m_MagicKey);
-	//m_BinaryData.insert(m_BinaryData.begin(), saveOptions.m_MagicKey);
-	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 24) & 0xFF));
-	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 16) & 0xFF));
-	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 8) & 0xFF));
-	m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), (saveOptions.m_MagicKey  & 0xFF));
-	return Save(saveOptions.m_FilePath);
+	//if (saveOptions.m_MagicKey != saveOptions.m_XorKey) {
+		//saveOptions.m_XorKey = saveOptions.m_MagicKey;
+	//}
+	//m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 24) & 0xFF));
+	//m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 16) & 0xFF));
+	//m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), ((saveOptions.m_MagicKey >> 8) & 0xFF));
+	//m_BinaryDataAsByteArray.insert(m_BinaryDataAsByteArray.begin(), (saveOptions.m_MagicKey  & 0xFF));
+	return Save(saveOptions.m_FilePath, saveOptions);
 }
 
 Enum_SerializationStatus SerializerManager::JsonSerialize() {
@@ -201,7 +211,7 @@ Enum_SerializationStatus SerializerManager::BinarySerialize() {
 
 
 
-Enum_SerializationStatus SerializerManager::Save(std::filesystem::path filePath)
+Enum_SerializationStatus SerializerManager::Save(std::filesystem::path filePath, SaveOptions& saveOptions)
 {
 	std::ofstream binaryFile(filePath, std::ios::binary);
 
@@ -215,8 +225,10 @@ Enum_SerializationStatus SerializerManager::Save(std::filesystem::path filePath)
 	{
 		uint32_t uncompressedSize = m_BinaryDataAsByteArray.size();
 		binaryFile.write(reinterpret_cast<const char*>(&uncompressedSize), sizeof(uncompressedSize));
-		binaryFile.write(reinterpret_cast<const char*>(m_CompressedData.data()), m_CompressedData.size());
-		binaryFile.write(reinterpret_cast<const char*>(m_BinaryDataAsByteArray.data()), m_BinaryDataAsByteArray.size());
+		if(saveOptions.m_SaveFlags & Enum_Save::E_Compress)
+			binaryFile.write(reinterpret_cast<const char*>(m_CompressedData.data()), m_CompressedData.size());
+		else
+			binaryFile.write(reinterpret_cast<const char*>(m_BinaryDataAsByteArray.data()), m_BinaryDataAsByteArray.size());
 
 		binaryFile.close();
 	}

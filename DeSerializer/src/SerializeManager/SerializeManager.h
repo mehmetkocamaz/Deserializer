@@ -35,7 +35,7 @@ private:
 	std::vector<uint8_t> m_CompressedData;
 	std::vector<uint8_t> m_DeCompressedData;
 	SerializeSpec m_SerializeSpecification;
-	Enum_SerializationStatus Save(std::filesystem::path filePath);
+	Enum_SerializationStatus Save(std::filesystem::path filePath, SaveOptions& saveOptions);
 	Enum_SerializationStatus EncryptionTest();
 	std::vector<Enum_SerializationStatus> m_Status;
 };

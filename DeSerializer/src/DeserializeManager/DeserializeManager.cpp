@@ -109,7 +109,7 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 	uint32_t decompressedBufferSize = 0;
 	size_t offset = 0;
 
-	if (buffer.size() > 4)
+	if (buffer.size() > 8)
 	{
 		int32_t magicKey = 0;
 		Utils::ReadFromBuffer(buffer, decompressedBufferSize, offset);
@@ -120,15 +120,19 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 	{
 		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_XorFilter)
 			Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_XorKey);
-		else {
-			
+		else 
+		{
+			if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
+				//m_DeserializeSpecification.m_SaveOptions.m_MagicKey -= 0x10000000;
+			Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_MagicKey);
 		}
-			//Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_MagicKey);
 
 		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
 		{
 			decompressedDataBuffer.resize(decompressedBufferSize);
-			Utils::Decompress(buffer, decompressedDataBuffer);
+			if (!Utils::Decompress(buffer, decompressedDataBuffer)) {
+				std::cout << "Data cannot decompressed." << std::endl;
+			}
 		}
 		else
 		{

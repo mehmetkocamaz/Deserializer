@@ -91,14 +91,14 @@ namespace Utils {
 			return false; // Not enough data to compress
 
 		// Reserve space for the uncompressed data
-		uLongf uncompressedSize = dataBufferToCompress.size() - 4; // Exclude first 4 bytes
+		uLongf uncompressedSize = dataBufferToCompress.size(); // Exclude first 4 bytes
 		uLongf compressedSize = Zlw::CompressBound(uncompressedSize);
-		compressedDataBuffer.resize(compressedSize + 4); // Reserve space for the 4 bytes to be appended later
+		compressedDataBuffer.resize(compressedSize); // Reserve space for the 4 bytes to be appended later
 
 		// Compress the data (excluding first 4 bytes)
-		if (Zlw::Compress(dataBufferToCompress.data() + 4, uncompressedSize, compressedDataBuffer.data() + 4, compressedSize)) {
+		if (Zlw::Compress(dataBufferToCompress.data(), uncompressedSize, compressedDataBuffer.data(), compressedSize)) {
 			// Write the first 4 bytes to the beginning of the compressed buffer
-			std::copy(dataBufferToCompress.begin(), dataBufferToCompress.begin() + 4, compressedDataBuffer.begin());
+			std::copy(dataBufferToCompress.begin(), dataBufferToCompress.begin(), compressedDataBuffer.begin());
 			// Resize the compressed buffer to the actual size of the compressed data plus the first 4 bytes
 			compressedDataBuffer.resize(compressedSize + 4);
 			return true;

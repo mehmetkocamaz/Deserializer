@@ -120,12 +120,12 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 	{
 		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_XorFilter)
 			Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_XorKey);
-		else 
-		{
-			if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
+		//else 
+		//{
+			//if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
 				//m_DeserializeSpecification.m_SaveOptions.m_MagicKey -= 0x10000000;
-			Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_MagicKey);
-		}
+			//Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_MagicKey);
+		//}
 
 		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
 		{

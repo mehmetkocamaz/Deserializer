@@ -76,12 +76,11 @@ namespace ApplicationUtils
 		//if (saveProcess == 1)
 		//	ImGui::Text("Saving process is failed because when you choose type you select \'None\'");
 
-		saveThreadRunning = false;
 		inputBufferSize = strlen(s_FileSaveOptions.m_InputBuffer);
 		if(inputBufferSize > 2)
 			for (int32_t statusIterator = 0; statusIterator < serializerManager.GetSerializationStatusRef().size(); statusIterator++)
 			{
-				//std::cout << serializationTypeStatus << std::endl;
+				std::cout << serializationTypeStatus << std::endl;
 				switch (serializerManager.GetSerializationStatusRef()[statusIterator])
 				{
 				case Enum_SerializationStatus::SUCCESS:
@@ -108,7 +107,8 @@ namespace ApplicationUtils
 		{
 			serializationTypeStatus = "Empty File Path";
 		}
-
+		//SaveProcessInformation(serializerManager, inputBufferSize);
+		saveThreadRunning = false;
 	}
 
 	void SaveFileDialog(PWSTR& pwsz)

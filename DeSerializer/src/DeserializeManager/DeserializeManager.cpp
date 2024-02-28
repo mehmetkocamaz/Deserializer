@@ -101,6 +101,26 @@ Enum_DeserializationStatus DeserializerManager::JsonDeserialize() {
 	return Enum_DeserializationStatus::SUCCESS;
 }
 
+void DeserializerManager::FlagValidator() {
+	if (m_DeserializeSpecification.m_SaveOptions.m_MagicKey > 0x10000000) {
+		//Data is both compressed and XORed
+		m_LoadFlags = 0x11;
+	}
+	else if (m_DeserializeSpecification.m_SaveOptions.m_MagicKey == 0x10000000)
+	{
+		//data is compressed but not XORed
+		m_LoadFlags = 0x10;
+	}
+	else if (m_DeserializeSpecification.m_SaveOptions.m_MagicKey == 0x0) {
+		// Data is not compressed and not XORed
+		m_LoadFlags = 0x00;
+	}
+	else
+	{
+		// Data is not compressed but XORed
+		m_LoadFlags = 0x01;
+	}
+}
 
 Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 {
@@ -117,29 +137,107 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 		buffer.erase(buffer.begin(), buffer.begin() + 8);
 	}
 
-	{
-		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_XorFilter)
-			Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_XorKey);
-		//else 
-		//{
-			//if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
-				//m_DeserializeSpecification.m_SaveOptions.m_MagicKey -= 0x10000000;
-			//Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_MagicKey);
-		//}
+	FlagValidator();
 
-		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
-		{
-			decompressedDataBuffer.resize(decompressedBufferSize);
-			if (!Utils::Decompress(buffer, decompressedDataBuffer)) {
-				std::cout << "Data cannot decompressed." << std::endl;
+	{
+		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_XorFilter) {
+			if (m_LoadFlags == 0x11) {
+				if ((m_DeserializeSpecification.m_SaveOptions.m_MagicKey - 0x10000000) == m_DeserializeSpecification.m_SaveOptions.m_XorKey) {
+					Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_XorKey);
+				}
+				else
+					GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::XOR_KEY_ERROR);
+			}
+			else if (m_LoadFlags == 0x01) {
+				if (m_DeserializeSpecification.m_SaveOptions.m_MagicKey == m_DeserializeSpecification.m_SaveOptions.m_XorKey) {
+					Utils::ApplyXorFilter(buffer, m_DeserializeSpecification.m_SaveOptions.m_XorKey);
+				}
+				else
+					GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::XOR_KEY_ERROR);
+			}
+			else {
+				GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::XOR_CHECK_ERROR);
 			}
 		}
-		else
+		else {
+			if (m_LoadFlags == 0x11) 
+				GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::XOR_CHECK_ERROR);
+			else if (m_LoadFlags == 0x01)
+				GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::XOR_CHECK_ERROR);
+		}
+
+		if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress) {
+			bool isXorFilterNotApplied = false;
+			if (m_LoadFlags == 0x11) {
+				for (int32_t statusIterator = 0; statusIterator < GetDeserializationStatusRef().size(); statusIterator++) {
+					if ((GetDeserializationStatusRef()[statusIterator] == Enum_DeserializationStatus::XOR_KEY_ERROR) || (GetDeserializationStatusRef()[statusIterator] == Enum_DeserializationStatus::XOR_CHECK_ERROR)) {
+						isXorFilterNotApplied = true;
+						break;
+					}
+				}
+				if (!isXorFilterNotApplied) {
+					decompressedDataBuffer.resize(decompressedBufferSize);
+					if (!Utils::Decompress(buffer, decompressedDataBuffer)) {
+						std::cout << "Data cannot decompressed." << std::endl;
+						GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::DECOMPRESSION_ERROR);
+					}
+				}
+				else {
+					GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::DECOMPRESSION_ERROR);
+				}
+			}
+			else if (m_LoadFlags == 0x10) {
+				decompressedDataBuffer.resize(decompressedBufferSize);
+				if (!Utils::Decompress(buffer, decompressedDataBuffer)) {
+					std::cout << "Data cannot decompressed." << std::endl;
+					GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::DECOMPRESSION_ERROR);
+				}
+			}
+			else
+				GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::DECOMPRESSION_CHECK_ERROR);
+		}
+
+		else 
 		{
-			decompressedDataBuffer = buffer;
+			if (m_LoadFlags == 0x11)
+				GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::DECOMPRESSION_CHECK_ERROR);
+			else if (m_LoadFlags == 0x10)
+				GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::DECOMPRESSION_CHECK_ERROR);
+			else
+				decompressedDataBuffer = buffer;
+		}
+
+		//if (m_DeserializeSpecification.m_SaveOptions.m_SaveFlags & Enum_Save::E_Decompress)
+		//{
+			//decompressedDataBuffer.resize(decompressedBufferSize);
+			//if (!Utils::Decompress(buffer, decompressedDataBuffer)) {
+				//std::cout << "Data cannot decompressed." << std::endl;
+			//}
+		//}
+		//else
+		//{
+			//decompressedDataBuffer = buffer;
+		//}
+	}
+
+	bool isReadyToLoad = true;
+	for (int32_t statusIterator = 0; statusIterator < GetDeserializationStatusRef().size(); statusIterator++) {
+		switch (GetDeserializationStatusRef()[statusIterator])
+		{
+		case Enum_DeserializationStatus::FAIL:						isReadyToLoad = false; break;
+		case Enum_DeserializationStatus::UNSUPPORTED:				isReadyToLoad = false; break;
+		case Enum_DeserializationStatus::EMPTY_BUFFER:				isReadyToLoad = false; break;
+		case Enum_DeserializationStatus::XOR_KEY_ERROR:				isReadyToLoad = false; break;
+		case Enum_DeserializationStatus::OPEN_FILE_ERROR:			isReadyToLoad = false; break;
+		case Enum_DeserializationStatus::XOR_CHECK_ERROR:			isReadyToLoad = false; break;
+		case Enum_DeserializationStatus::DECOMPRESSION_ERROR:		isReadyToLoad = false; break;
+		case Enum_DeserializationStatus::DECOMPRESSION_CHECK_ERROR: isReadyToLoad = false; break;
+		default:
+			isReadyToLoad = true;	break;
 		}
 	}
 
+	if (isReadyToLoad)
 	{
 		offset = 0;
 		uint32_t combineInfoSize = 0;
@@ -208,10 +306,16 @@ Enum_DeserializationStatus DeserializerManager::BinaryDeserialize()
 		catch (const std::exception& e)
 		{
 			std::cerr << "The error is " << e.what() << std::endl;
+			GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::FAIL);
 		}
+		GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::SUCCESS);
+		return Enum_DeserializationStatus::SUCCESS;
 	}
-
-	return Enum_DeserializationStatus::SUCCESS;
+	else
+	{
+		GetDeserializationStatusRef().push_back(Enum_DeserializationStatus::FAIL);
+		return Enum_DeserializationStatus::FAIL;
+	}
 }
 
 

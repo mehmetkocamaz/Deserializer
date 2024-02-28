@@ -108,6 +108,7 @@ void MainLayer::OnUIRender()
 			ImGui::OpenPopup("Save");
 		}
 	}
+	ImGui::NewLine();
 	if (isSavePathEmpty)
 		ImGui::Text(savePathErrorText.c_str());
 	if(isSaveNameEmpty)
@@ -144,16 +145,24 @@ void MainLayer::OnUIRender()
 		switch (statusIterator)
 		{
 		case 0:
-			ImGui::Text("%s : %s", "Serialization Type Status", serializationTypeStatus.c_str());
+			ImGui::Text("%s ", "Serialization Type Status");
+			ImGui::SameLine(220.0f, NULL);
+			ImGui::Text(": %s", serializationTypeStatus.c_str());
 			break;
 		case 1:
-			ImGui::Text("%s : %s", "Binary Serialization Status", binarySerializationStatus.c_str());
+			ImGui::Text("%s ", "Binary Serialization Status");
+			ImGui::SameLine(220.0f, NULL);
+			ImGui::Text(": %s", binarySerializationStatus.c_str());
 			break;
 		case 2:
-			ImGui::Text("%s : %s", "Save Options Status", saveOptionsStatus.c_str());
+			ImGui::Text("%s ", "Save Options Status");
+			ImGui::SameLine(220.0f, NULL);
+			ImGui::Text(": %s", saveOptionsStatus.c_str());
 			break;
 		case 3:
-			ImGui::Text("%s : %s", "Save Status", saveStatus.c_str());
+			ImGui::Text("%s ", "Save Status");
+			ImGui::SameLine(220.0f, NULL);
+			ImGui::Text(": %s", saveStatus.c_str());
 			break;
 		default:
 			ImGui::Text("The code should not be here!!!");
@@ -164,6 +173,7 @@ void MainLayer::OnUIRender()
 	ImGui::End();
 
 	ImGui::Begin("Load Options");
+	static int32_t loadStatusFlag = 0;
 	static std::string loadErrorText = "";
 	bool isLoadPathEmpty = true;
 	DrawLoadOptions(loadErrorText);
@@ -193,6 +203,7 @@ void MainLayer::OnUIRender()
 			ImGui::OpenPopup("Load");
 		}
 	}
+	ImGui::NewLine();
 	if(isLoadPathEmpty)
 		ImGui::Text(loadErrorText.c_str());
 
@@ -204,7 +215,7 @@ void MainLayer::OnUIRender()
 			if (!loadThreadRunning)
 			{
 				loadThreadRunning = true;
-				std::thread v_LoadWorker(LoadOperation, std::ref(v_CombineInfos), std::ref(loadThreadRunning));
+				std::thread v_LoadWorker(LoadOperation, std::ref(v_CombineInfos), std::ref(loadThreadRunning), std::ref(loadStatusFlag));
 				v_LoadWorker.detach();
 			}
 			ImGui::CloseCurrentPopup();
@@ -220,22 +231,56 @@ void MainLayer::OnUIRender()
 	if (s_IsLoadDisabled)
 		ImGui::EndDisabled();
 
+	const char* emptyBuffer = "Empty Buffer!";
+	const char* decompressionCheck = "Decompression check error!";
+	const char* decompressionError = "Decompression error!";
+	const char* xorCheck = "Xor check error!";
+	const char* xorKey = "Xor key is wrong!";
+	const char* fileCannotOpen = "File cannot open!";
+	const char* unsupported = "Load unsupported!";
+
+	static std::vector<int32_t> s_ErrorNumbers;
+	if(loadStatusFlag > 0) {
+		s_ErrorNumbers.clear();
+		constexpr int32_t flagSize = 9;
+		int32_t tempValue = 256;
+		for (int32_t loadFlag = 1; loadFlag <= flagSize; loadFlag++) {
+			if (loadStatusFlag >= tempValue) {
+				switch (loadFlag)
+				{
+				case 1:	s_ErrorNumbers.push_back(8);	break;
+				case 2: s_ErrorNumbers.push_back(7);	break;
+				case 3: s_ErrorNumbers.push_back(6);	break;
+				case 4: s_ErrorNumbers.push_back(5);	break;
+				case 5: s_ErrorNumbers.push_back(4);	break;
+				case 6: s_ErrorNumbers.push_back(3);	break;
+				case 7: s_ErrorNumbers.push_back(2);	break;
+				case 8: s_ErrorNumbers.push_back(1);	break;
+				//default:s_ErrorNumbers.push_back(9);	break;
+				}
+				loadStatusFlag -= tempValue;
+			}
+			tempValue /= 2;
+		}
+	}
+	if (s_ErrorNumbers.size() > 0) {
+		ImGui::Text("Error List: ");
+		ImGui::NewLine();
+		for (int32_t errorIterator = 0; errorIterator < s_ErrorNumbers.size(); errorIterator++) {
+			switch (s_ErrorNumbers[errorIterator])
+			{
+			case 1:	ImGui::Text("Load failed!");				break;
+			case 2: ImGui::Text("Load unsupported!");			break;
+			case 3: ImGui::Text("File cannot opened!");			break;
+			case 4: ImGui::Text("Xor key is wrong!");			break;
+			case 5: ImGui::Text("Xor check error!");			break;
+			case 6: ImGui::Text("Decompression error!");		break;
+			case 7: ImGui::Text("Decompression check error!");	break;
+			case 8: ImGui::Text("Empty Buffer!");				break;
+			}
+		}
+	}
 	ImGui::End();
-
-	//ImGui::Begin("Autosave");
-	//DrawAutoSave(autoSaveCheckBox);
-	//if (startTime >= endTime) {
-	//	autoSaveThreadRunning = true;
-	//}
-	//if (autoSaveThreadRunning && autoSaveCheckBox) {
-	//	std::thread v_AutoSaveWorker(AutoSaveOperation, std::ref(v_CombineInfos), startTime, endTime, std::ref(autoSaveThreadRunning));
-	//	v_AutoSaveWorker.detach();
-	//	autoSaveThreadRunning = false;
-	//	startTime = std::chrono::steady_clock::now();
-	//	endTime = startTime + std::chrono::minutes(2);
-	//}
-
-	//ImGui::End();
 
 	ImGui::Begin("Auto Save");
 	ImGui::Text("Auto Save: ");

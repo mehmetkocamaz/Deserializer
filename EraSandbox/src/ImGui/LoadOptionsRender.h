@@ -39,7 +39,7 @@ namespace ApplicationUtils
 
 	static FileLoadOptions s_FileLoadOptions;
 
-	void LoadOperation(std::vector<CombineInfo>& v_CombineInfos, bool& loadThreadRunning) {
+	void LoadOperation(std::vector<CombineInfo>& v_CombineInfos, bool& loadThreadRunning, int32_t& s_LoadStatusFlag) {
 		DeserializeSpec deserializerSpecialization;
 		deserializerSpecialization.m_FileType = Enum_DeserializeContentType::BINARY;
 		deserializerSpecialization.m_SaveOptions = s_FileLoadOptions.TranspileToLoadOptions();
@@ -78,6 +78,25 @@ namespace ApplicationUtils
 			}
 		}
 		loadThreadRunning = false;
+		if (deserializerManager.GetDeserializationStatusRef().size() > 0) {
+			s_LoadStatusFlag = 0;
+			for (int32_t statusIterator = 0; statusIterator < deserializerManager.GetDeserializationStatusRef().size(); statusIterator++) {
+				switch (deserializerManager.GetDeserializationStatusRef()[statusIterator])
+				{
+				case Enum_DeserializationStatus::SUCCESS:						s_LoadStatusFlag += 0b1; break;
+				case Enum_DeserializationStatus::FAIL:							s_LoadStatusFlag += 0b10; break;
+				case Enum_DeserializationStatus::UNSUPPORTED:					s_LoadStatusFlag += 0b100; break;
+				case Enum_DeserializationStatus::OPEN_FILE_ERROR:				s_LoadStatusFlag += 0b1000; break;
+				case Enum_DeserializationStatus::XOR_KEY_ERROR:					s_LoadStatusFlag += 0b10000; break;
+				case Enum_DeserializationStatus::XOR_CHECK_ERROR:				s_LoadStatusFlag += 0b100000; break;
+				case Enum_DeserializationStatus::DECOMPRESSION_ERROR:			s_LoadStatusFlag += 0b1000000; break;
+				case Enum_DeserializationStatus::DECOMPRESSION_CHECK_ERROR:		s_LoadStatusFlag += 0b10000000; break;
+				case Enum_DeserializationStatus::EMPTY_BUFFER:					s_LoadStatusFlag += 0b100000000; break;
+				default:
+					s_LoadStatusFlag = 0b0;	break;
+				}
+			}
+		}
 	}
 
 	void LoadFileDialog(PWSTR& pwsz)
